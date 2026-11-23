@@ -177,8 +177,8 @@ describe('routing through the tunnel', () => {
 describe('alerts, SEND and AUTO', () => {
   it('an engineer raises an alert; SEND sends its responders as a sortie', () => {
     const s = withWarriors();
-    s.groups.auto.warrior = false;
-    s.groups.auto.harrier = false;
+    s.groups.stance.warrior = 'off';
+    s.groups.stance.harrier = 'off';
     const e = (s as unknown as Spawner).spawnEnemy('engineer');
     e.pos = streetAway(s, s.bodyPoint(), 200);
     for (let i = 0; i < 15; i++) { s.tick(); s.takeEvents(); }
@@ -190,27 +190,134 @@ describe('alerts, SEND and AUTO', () => {
     expect(s.groups.alerts.find((a) => a.id === al!.id)?.answered).toBe(true);
   });
 
-  it('AUTO: a kind set to answer alerts goes by itself; off, it waits', () => {
-    const on = withWarriors();
-    expect(on.groups.auto.warrior).toBe(true); // warriors answer by default
-    const e = (on as unknown as Spawner).spawnEnemy('engineer');
-    e.pos = streetAway(on, on.bodyPoint(), 200);
-    for (let i = 0; i < 15; i++) { on.tick(); on.takeEvents(); }
-    expect(on.groups.sorties.size).toBe(3);
+  it('the old AUTO switch still works: off is the OFF stance, on gives the kind its usual stance', () => {
+    const s = withWarriors();
+    expect(s.groups.auto.warrior).toBe(true); // warriors answer by default (DEFEND)
+    expect(s.issue({ kind: 'set-auto', who: 'warrior', on: false }).ok).toBe(true);
+    expect(s.groups.stance.warrior).toBe('off');
+    expect(s.issue({ kind: 'set-auto', who: 'warrior', on: true }).ok).toBe(true);
+    expect(s.groups.stance.warrior).toBe('defend');
+  });
+});
+
+/** Cover: a street in your limbs' fire or on your creep. */
+function covered(s: Sim, c: number): boolean {
+  return isPassable(s.map.cells[c]) && (s.isCreeped(c) || s.dangerAt(c) > 0);
+}
+/** A street at least `far` px from any cover. */
+function outOfCover(s: Sim, far: number): Vec {
+  const cover: Vec[] = [];
+  for (let c = 0; c < s.map.cells.length; c++) if (covered(s, c)) cover.push(s.cellCenter(c));
+  // Any point, off the claimed streets too: the start's city is small (43 streets, all within 170 px of the creep).
+  for (let c = 0; c < s.map.cells.length; c++) {
+    const p = s.cellCenter(c);
+    if (cover.every((q) => Math.hypot(q.x - p.x, q.y - p.y) >= far)) return p;
+  }
+  throw new Error('no street that far out of cover');
+}
+/** A creeped street at least `far` px from the body (no leak answer there). */
+function inCover(s: Sim, far: number): Vec {
+  const b = s.bodyPoint();
+  for (let c = 0; c < s.map.cells.length; c++) {
+    if (!covered(s, c)) continue;
+    const p = s.cellCenter(c);
+    if (Math.hypot(p.x - b.x, p.y - b.y) >= far) return p;
+  }
+  throw new Error('no cover that far');
+}
+function tickSome(s: Sim, n: number): void {
+  for (let i = 0; i < n; i++) { s.tick(); s.takeEvents(); }
+}
+
+describe('STANCES (Collins, Nov 23 2026: defensive, hunter "which targets science teams while trying to stay in cover", offensive "that targets where bases are being set up")', () => {
+  it('DEFEND answers what comes into cover and lets what is out of it be', () => {
+    const s = withWarriors();
+    expect(s.groups.stance.warrior).toBe('defend');
+    const far = (s as unknown as Spawner).spawnEnemy('engineer');
+    far.pos = outOfCover(s, 200);
+    tickSome(s, 15);
+    expect(s.groups.sorties.size).toBe(0);
+    const near = (s as unknown as Spawner).spawnEnemy('engineer');
+    near.pos = inCover(s, 140);
+    tickSome(s, 15);
+    expect([...s.groups.sorties.values()].filter((x) => x.targetId === near.id)).toHaveLength(3);
+  });
+
+  it('DEFEND breaks off a chase once the quarry is out of reach of cover, and comes home', () => {
+    const s = withWarriors();
+    const e = (s as unknown as Spawner).spawnEnemy('engineer');
+    e.pos = inCover(s, 140);
+    tickSome(s, 15);
+    expect(s.groups.sorties.size).toBe(3);
+    e.pos = outOfCover(s, 200);
+    tickSome(s, 15);
+    expect([...s.groups.sorties.values()].some((x) => x.targetId === e.id)).toBe(false);
+  });
+
+  it('RAID goes for an engineer setting up anywhere; OFF waits', () => {
+    const raid = withWarriors();
+    expect(raid.issue({ kind: 'set-stance', who: 'warrior', stance: 'raid' }).ok).toBe(true);
+    const e = (raid as unknown as Spawner).spawnEnemy('engineer');
+    e.pos = outOfCover(raid, 200);
+    tickSome(raid, 15);
+    expect([...raid.groups.sorties.values()].filter((x) => x.targetId === e.id)).toHaveLength(3);
 
     const off = withWarriors();
-    expect(off.issue({ kind: 'set-auto', who: 'warrior', on: false }).ok).toBe(true);
+    off.issue({ kind: 'set-stance', who: 'warrior', stance: 'off' });
     const e2 = (off as unknown as Spawner).spawnEnemy('engineer');
-    e2.pos = streetAway(off, off.bodyPoint(), 200);
-    for (let i = 0; i < 15; i++) { off.tick(); off.takeEvents(); }
+    e2.pos = inCover(off, 140);
+    tickSome(off, 15);
     expect(off.groups.sorties.size).toBe(0);
+  });
+
+  it('RAID leaves the science teams alone; HUNT leaves the engineers alone', () => {
+    const raid = withWarriors();
+    raid.issue({ kind: 'set-stance', who: 'warrior', stance: 'raid' });
+    const r = (raid as unknown as Spawner).spawnEnemy('researcher');
+    r.pos = inCover(raid, 140);
+    tickSome(raid, 15);
+    expect(raid.groups.sorties.size).toBe(0);
+
+    const hunt = withWarriors();
+    hunt.issue({ kind: 'set-stance', who: 'warrior', stance: 'hunt' });
+    const e = (hunt as unknown as Spawner).spawnEnemy('engineer');
+    e.pos = inCover(hunt, 140);
+    tickSome(hunt, 15);
+    expect(hunt.groups.sorties.size).toBe(0);
+  });
+
+  it('HUNT waits in cover nearest a science team out of reach, and strikes when it comes in reach', () => {
+    const s = withWarriors();
+    s.issue({ kind: 'set-stance', who: 'warrior', stance: 'hunt' });
+    const r = (s as unknown as Spawner).spawnEnemy('researcher');
+    r.pos = outOfCover(s, 200);
+    tickSome(s, 15);
+    expect(s.groups.sorties.size).toBe(0);
+    expect(s.groups.lurks.size).toBe(3);
+    for (const lk of s.groups.lurks.values()) expect(covered(s, s.cellAt(lk.at.x, lk.at.y))).toBe(true);
+    r.pos = inCover(s, 140);
+    tickSome(s, 15);
+    expect([...s.groups.sorties.values()].filter((x) => x.targetId === r.id)).toHaveLength(3);
+    expect(s.groups.lurks.size).toBe(0);
+  });
+
+  it('the player\'s own order comes first: a unit he moved is not given stance work', () => {
+    const s = withWarriors();
+    s.issue({ kind: 'set-stance', who: 'warrior', stance: 'raid' });
+    const ids = unitsOf(s, 'warrior').map((u) => u.id);
+    s.issue({ kind: 'unit-order', ids: [ids[0]], order: { kind: 'hold' } });
+    const e = (s as unknown as Spawner).spawnEnemy('engineer');
+    e.pos = outOfCover(s, 200);
+    tickSome(s, 15);
+    expect(s.groups.sorties.has(ids[0])).toBe(false);
+    expect(s.groups.sorties.size).toBe(2);
   });
 });
 
 describe('jobs no one has to order', () => {
   it('idle Brood Pit warriors answer a leak at the body', () => {
     const s = withWarriors();
-    s.groups.auto.warrior = false; // the leak answer is not the alert's AUTO
+    s.groups.stance.warrior = 'off'; // the leak answer is not the alert's AUTO
     const e = (s as unknown as Spawner).spawnEnemy('militia');
     const p = s.bodyPoint();
     e.pos = { ...p };

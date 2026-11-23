@@ -22,6 +22,7 @@
 import { enemySpec, type Sim } from './sim';
 import type { Broodling, Broodmother, Command, Harrier, Infestor, SporeMule, UnitOrder, Vec } from './types';
 import { BALANCE as B } from '../../content/data';
+import { isPassable } from './citymap';
 
 export type Unit = Broodling | Broodmother | SporeMule | Infestor | Harrier;
 export type UnitKind = 'warrior' | 'mother' | 'mule' | 'infestor' | 'harrier';
@@ -84,20 +85,57 @@ export const ALERT_ANSWER: Record<AlertKind, UnitKind[]> = {
   // A SHIELD DOME (the dome fork's Aegis Deacon / Lens Bearer): it soaks your limbs' fire, not your units' blows.
   dome: ['warrior', 'mother', 'harrier'],
 };
+/**
+ * STANCES (Collins, Nov 23 2026: "on the little critters you can generate and control we should have an AI for auto handling
+ * them in one of two settings, defensive and hunter (which targets science teams while trying to stay in cover) ... and
+ * maybe an offensive as well that targets where bases are being set up"). What a unit kind does with no one ordering it:
+ *   OFF    — only what it is told; it guards its post.
+ *   DEFEND — answers whatever comes into COVER (your limbs' fire or your creep): parties, engineers, domes, a station, an
+ *            outpost under attack; it chases nothing out of cover, it comes home.
+ *   HUNT   — the science teams. It waits in cover at the point nearest the closest team and strikes the moment one comes
+ *            within its reach of cover; a team that walks out of it is let go, and it waits again.
+ *   RAID   — where the bases are going up: engineers and field stations, anywhere on the board, then home.
+ * The player's own orders come first, always. A hurt unit off the creep still walks back onto it to heal.
+ */
+export type Stance = 'off' | 'defend' | 'hunt' | 'raid';
+export const STANCES: ReadonlyArray<{ stance: Stance; name: string; tip: string }> = [
+  { stance: 'off', name: 'OFF', tip: 'OFF: only what you order; they guard their post' },
+  { stance: 'defend', name: 'DEFEND', tip: 'DEFEND: they fight whatever comes inside your limbs\' fire or onto your creep, and never chase it out' },
+  { stance: 'hunt', name: 'HUNT', tip: 'HUNT: they go for the science teams, waiting in cover and striking when a team comes in reach of it' },
+  { stance: 'raid', name: 'RAID', tip: 'RAID: they go for the engineers and field stations, wherever the hive is setting up a base' },
+];
+export const STANCE_DEFAULT: Record<UnitKind, Stance> = { warrior: 'defend', harrier: 'hunt', mother: 'off', mule: 'off', infestor: 'off' };
+/** The kinds a stance applies to (an unarmed Spore Mule or a precious Infestor never goes anywhere by itself). */
+export const STANCE_KINDS: ReadonlyArray<UnitKind> = ['warrior', 'mother', 'harrier'];
+/** The alerts each stance answers by itself. */
+const STANCE_ANSWERS: Record<Stance, AlertKind[]> = {
+  off: [],
+  defend: ['science', 'engineer', 'station', 'outpost', 'dome'],
+  hunt: ['science'],
+  raid: ['engineer', 'station'],
+};
+/** How far from cover a unit of this kind strikes (px): a Harrier shoots from its range, a biter steps out a little. */
+export function strikeOf(kind: UnitKind): number {
+  return kind === 'harrier' ? B.harrierRange : kind === 'mother' ? 70 : 60;
+}
+/** Kept for the old AUTO switch and its readers: a kind answers by itself when its stance is not OFF. */
 export const AUTO_DEFAULT: Record<UnitKind, boolean> = { warrior: true, harrier: true, mother: false, mule: false, infestor: false };
 
 /** The expansion's tunnel (Sim.tunnelLink), read without depending on it being built yet. */
 export interface TunnelLink { bodyCell: number; headCell: number; headOutpostId: number }
 
 /** A sortie: hunt this down (or clear this spot), then come home. */
-interface Sortie { targetId?: number; to: Vec; home?: Vec; quiet: number }
+interface Sortie { targetId?: number; to: Vec; home?: Vec; quiet: number; leash?: Stance }
+/** A HUNT-stance unit waiting in cover near a science team: where it came from, and where it waits. */
+interface Lurk { home?: Vec; at: Vec }
 /** A hurt unit walking back onto the creep to heal: what it was doing, to go back to. */
 interface Retreat { orders: UnitOrder[]; guard?: Vec }
 
 export class Groups {
   readonly sorties = new Map<number, Sortie>();
   readonly retreats = new Map<number, Retreat>();
-  auto: Record<UnitKind, boolean> = { ...AUTO_DEFAULT };
+  readonly lurks = new Map<number, Lurk>();
+  stance: Record<UnitKind, Stance> = { ...STANCE_DEFAULT };
   alerts: Alert[] = [];
   private alertSeq = 1;
   private alertClock = 0;
@@ -110,6 +148,42 @@ export class Groups {
   forget(id: number): void {
     this.sorties.delete(id);
     this.retreats.delete(id);
+    this.lurks.delete(id);
+  }
+
+  /** Whether a kind does anything by itself (its stance is not OFF): the old AUTO switch, read. */
+  get auto(): Record<UnitKind, boolean> {
+    const out = {} as Record<UnitKind, boolean>;
+    for (const k of Object.keys(this.stance) as UnitKind[]) out[k] = this.stance[k] !== 'off';
+    return out;
+  }
+
+  /** The old AUTO switch: on gives the kind its usual stance (DEFEND for one that has none), off is OFF. */
+  setAuto(who: UnitKind, on: boolean): void {
+    this.setStance(who, on ? (STANCE_DEFAULT[who] === 'off' ? 'defend' : STANCE_DEFAULT[who]) : 'off');
+  }
+
+  setStance(who: UnitKind, stance: Stance): void {
+    this.stance[who] = stance;
+    // A unit waiting or chasing under the old stance goes home; the next pass gives it the new one's work.
+    for (const u of unitsOf(this.s, who)) {
+      const so = this.sorties.get(u.id);
+      if (so?.leash) { this.sorties.delete(u.id); this.goHome(u, so.home); }
+      const lk = this.lurks.get(u.id);
+      if (lk) { this.lurks.delete(u.id); this.goHome(u, lk.home); }
+    }
+  }
+
+  /** Back to its own post (a Pit warrior's is its rally point: home undefined). */
+  private goHome(u: Unit, home: Vec | undefined): void {
+    const list = this.ordersOf(u);
+    list.length = 0;
+    if (home) {
+      this.route(u, kindOf(this.s, u), home, list);
+      list.push({ kind: 'move', to: home });
+    } else if (!('mode' in u)) {
+      (u as { guard?: Vec }).guard = undefined;
+    }
   }
 
   /** Read what was clicked at a world point. */
@@ -266,13 +340,7 @@ export class Groups {
       if (so.quiet < 2) continue;
       // The spot is quiet: home.
       this.sorties.delete(id);
-      list.length = 0;
-      if (so.home) {
-        this.route(u, kindOf(s, u), so.home, list);
-        list.push({ kind: 'move', to: so.home });
-      } else if (!('mode' in u)) {
-        (u as { guard?: Vec }).guard = undefined; // a Pit warrior: back to its rally point
-      }
+      this.goHome(u, so.home);
     }
     // Retreats: a hurt unit off the creep walks onto it; healed, it goes back.
     for (const k of UNIT_KINDS) {
@@ -358,15 +426,117 @@ export class Groups {
       if (hit) keep('outpost', sh.id, s.cellCenter(sh.door));
     }
     this.alerts = live;
-    // AUTO: the kinds set to answer by themselves do.
-    for (const al of this.alerts) {
-      if (al.answered) continue;
-      const kinds = al.who.filter((k) => this.auto[k]);
-      if (!kinds.length) continue;
-      // Harriers already hunt the science caste on their own; an alert about one needs no extra order for them.
-      const send = al.kind === 'science' ? kinds.filter((k) => k !== 'harrier') : kinds;
-      if (send.length === 0 || this.send(al, send) > 0 || kinds.length === 1) al.answered = true;
+    this.stancePass();
+  }
+
+  /** Your cover: every street cell inside your limbs' fire or on your creep. */
+  private coverCells(): number[] {
+    const s = this.s;
+    const out: number[] = [];
+    for (let c = 0; c < s.map.cells.length; c++) {
+      if (!isPassable(s.map.cells[c])) continue;
+      if (s.isCreeped(c) || s.dangerAt(c) > 0) out.push(c);
     }
+    return out;
+  }
+
+  /** The cover cell nearest a point, and how far it is (px). */
+  private nearestCover(cover: number[], p: Vec): { cell: number; d: number } {
+    const s = this.s;
+    let best = -1;
+    let bd = Infinity;
+    for (const c of cover) {
+      const q = s.cellCenter(c);
+      const d = Math.hypot(q.x - p.x, q.y - p.y);
+      if (d < bd) { bd = d; best = c; }
+    }
+    return { cell: best, d: bd };
+  }
+
+  /**
+   * The stances, once a second: every free unit of a kind with a stance (not on the player's orders, not on a sortie,
+   * not healing) is given its work; a leashed chase whose quarry has left cover is broken off.
+   */
+  private stancePass(): void {
+    const s = this.s;
+    const kinds = STANCE_KINDS.filter((k) => this.stance[k] !== 'off' && unitsOf(s, k).length > 0);
+    if (!kinds.length && !this.lurks.size) return;
+    const cover = this.coverCells();
+    const near = new Map<number, { cell: number; d: number }>();
+    const nearOf = (al: Alert): { cell: number; d: number } => {
+      let n = near.get(al.id);
+      if (!n) { n = this.nearestCover(cover, al.at); near.set(al.id, n); }
+      return n;
+    };
+    // Leashed chases: DEFEND and HUNT let a quarry go once it is out of reach of cover.
+    for (const [id, so] of [...this.sorties]) {
+      if (!so.leash || so.targetId === undefined) continue;
+      const u = s.unitById(id);
+      const q = s.enemies.find((e) => e.id === so.targetId && !e.burrowed);
+      if (!u || !q) continue;
+      const n = this.nearestCover(cover, q.pos);
+      if (n.d <= strikeOf(kindOf(s, u)) + 40) continue;
+      this.sorties.delete(id);
+      if (so.leash === 'hunt' && n.cell >= 0) this.lurkAt(u, s.cellCenter(n.cell), so.home);
+      else this.goHome(u, so.home);
+    }
+    for (const k of kinds) {
+      const st = this.stance[k];
+      const reach = strikeOf(k);
+      const wanted = this.alerts.filter((al) => STANCE_ANSWERS[st].includes(al.kind) && al.who.includes(k));
+      // In reach: RAID goes anywhere; an outpost under attack is home ground; otherwise it must be in reach of cover.
+      const inReach = wanted.filter((al) => st === 'raid' || al.kind === 'outpost' || nearOf(al).d <= reach);
+      for (const u of unitsOf(s, k)) {
+        if (this.sorties.has(u.id) || this.retreats.has(u.id) || this.inTunnel(u.id)) continue;
+        const lurking = this.lurks.get(u.id);
+        if (!lurking && this.ordersOf(u).length) continue; // the player's own order
+        const closest = (list: Alert[]): Alert | undefined => {
+          let best: Alert | undefined;
+          let bd = Infinity;
+          for (const al of list) { const d = Math.hypot(al.at.x - u.pos.x, al.at.y - u.pos.y); if (d < bd) { bd = d; best = al; } }
+          return best;
+        };
+        const go = closest(inReach);
+        if (go) {
+          const home = lurking ? lurking.home : this.homeOf(u);
+          this.lurks.delete(u.id);
+          const target: GroupTarget = go.kind === 'outpost' ? { kind: 'outpost', shelterId: go.targetId, at: go.at } : { kind: 'enemy', id: go.targetId, at: go.at };
+          this.orderSome([u], target, true);
+          const so = this.sorties.get(u.id);
+          if (so) { so.home = home; if (st !== 'raid' && go.kind !== 'outpost') so.leash = st; }
+          go.answered = true;
+          continue;
+        }
+        // HUNT with a team about but out of reach: wait in cover at the point nearest it.
+        const team = st === 'hunt' ? closest(wanted) : undefined;
+        if (team) {
+          const n = nearOf(team);
+          if (n.cell >= 0) {
+            const at = s.cellCenter(n.cell);
+            if (!lurking || Math.hypot(lurking.at.x - at.x, lurking.at.y - at.y) > 2 * s.cfg.cellPx) this.lurkAt(u, at, lurking ? lurking.home : this.homeOf(u));
+            continue;
+          }
+        }
+        if (lurking) { this.lurks.delete(u.id); this.goHome(u, lurking.home); }
+      }
+    }
+    // A unit whose kind went OFF while it waited goes home.
+    for (const [id, lk] of [...this.lurks]) {
+      const u = s.unitById(id);
+      if (!u) { this.lurks.delete(id); continue; }
+      if (this.stance[kindOf(s, u)] !== 'hunt') { this.lurks.delete(id); this.goHome(u, lk.home); }
+    }
+  }
+
+  /** Wait in cover here, fighting what comes (an attack-move to the spot; the spot becomes its post). */
+  private lurkAt(u: Unit, at: Vec, home: Vec | undefined): void {
+    const s = this.s;
+    const p = s.standableAt(at) ?? at;
+    const list = this.ordersOf(u);
+    list.length = 0;
+    this.route(u, kindOf(s, u), p, list);
+    list.push({ kind: 'attack', to: p });
+    this.lurks.set(u.id, { home, at: p });
   }
 }
 

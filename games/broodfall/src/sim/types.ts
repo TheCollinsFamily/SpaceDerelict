@@ -964,6 +964,8 @@ export type Command =
   | { kind: 'answer-alert'; alertId: number }
   /** A unit kind answers alerts by itself (AUTO), or not. */
   | { kind: 'set-auto'; who: 'warrior' | 'mother' | 'mule' | 'infestor' | 'harrier'; on: boolean }
+  /** What a unit kind does by itself (src/sim/groups.ts STANCES): off, defend, hunt (science, from cover), raid (bases). */
+  | { kind: 'set-stance'; who: 'warrior' | 'mother' | 'mule' | 'infestor' | 'harrier'; stance: 'off' | 'defend' | 'hunt' | 'raid' }
   /** A Broodmother's mode: brood (parked, brooding warriors) or fight (walks, bites, nets). */
   | { kind: 'mother-mode'; motherId: number; mode: 'brood' | 'fight' }
   /** Aim a Broodmother's net here, now (it must be off cooldown and in reach). */

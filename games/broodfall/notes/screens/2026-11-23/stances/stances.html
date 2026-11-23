@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unit Stances</title>
+<style>
+  :root { --bg: #0d1214; --card: #151d20; --ink: #dde9ea; --dim: #8fa3a6; --line: #2a3a3e; --good: #9fe39a; --warn: #f0c070; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, sans-serif; }
+  main { max-width: 920px; margin: 0 auto; padding: 28px 16px 60px; }
+  h1 { font-size: 26px; margin: 0 0 6px; letter-spacing: .5px; }
+  h2 { font-size: 19px; margin: 34px 0 10px; }
+  .lead { color: var(--dim); margin: 0 0 18px; }
+  .short { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--good); padding: 14px 16px; border-radius: 6px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .st { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 12px; }
+  .st img { width: 100%; max-width: 120px; display: block; margin: 0 auto 8px; border-radius: 4px; }
+  .st b { display: block; font-size: 15px; margin-bottom: 4px; }
+  .st p { margin: 0; color: var(--dim); font-size: 14px; }
+  table { border-collapse: collapse; width: 100%; background: var(--card); border: 1px solid var(--line); }
+  th, td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; }
+  th { color: var(--dim); font-weight: 600; font-size: 14px; }
+  .v-good { color: var(--good); font-weight: 600; }
+  .v-warn { color: var(--warn); font-weight: 600; }
+  .note { color: var(--dim); font-size: 13px; margin-top: 40px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Unit stances: DEFEND, HUNT, RAID</h1>
+  <p class="lead">Broodfall, November 23 2026. Your request: an AI that runs the little critters in a defensive or a hunter setting, where the hunter goes after science teams while staying in cover. Then a third setting that goes after where bases are being set up.</p>
+
+  <div class="short">
+    <b>Short version: built and working.</b> The old AUTO button under each unit portrait is now a stance button. Click it to go to the next stance: OFF, DEFEND, HUNT, RAID. "Cover" means any street inside your limbs' fire or on your creep, which is the same map the science teams use to sneak round your defences. Your own orders always come first. All 966 tests pass.
+  </div>
+
+  <h2>The four stances, as they look in the game</h2>
+  <div class="grid">
+    <div class="st"><img src="clip-off.png" alt="OFF button"><b>OFF</b><p>They do only what you tell them and guard their post.</p></div>
+    <div class="st"><img src="clip-defend.png" alt="DEFEND button"><b>DEFEND (warriors start here)</b><p>They fight anything that comes into cover: science teams, engineers, shield domes, a field station, an outpost under attack. They never chase it out of cover; they come home.</p></div>
+    <div class="st"><img src="clip-hunt.png" alt="HUNT button"><b>HUNT (Harriers start here)</b><p>Science teams only. They wait in cover at the spot nearest the closest team and strike as soon as it comes within reach. A Harrier shoots 170 px out from cover; warriors step out a little. A team that walks away is let go, and they wait again.</p></div>
+    <div class="st"><img src="clip-raid.png" alt="RAID button"><b>RAID</b><p>Engineers and field stations anywhere on the board, which is where the hive is setting up bases. They run them down, then come home.</p></div>
+  </div>
+  <p class="lead" style="margin-top:10px">Broodmothers start on OFF, so a mother you parked to brood stays parked until you change it.</p>
+
+  <h2>What changed for the Harrier</h2>
+  <p>Before, a Harrier left alone chased science bodies anywhere on the map. That is now the HUNT stance, and it hunts from cover. A Harrier on DEFEND or OFF stays home.</p>
+
+  <h2>Does it change how often you win?</h2>
+  <p>The scripted player played 10 runs of the 12-wave Hold with every fighter on each setting:</p>
+  <table>
+    <tr><th>Setting</th><th>Wins</th><th>Verdict</th></tr>
+    <tr><td>Defaults (warriors DEFEND, Harriers HUNT)</td><td>6 / 10</td><td class="v-good">fine</td></tr>
+    <tr><td>Everyone DEFEND</td><td>6 / 10</td><td class="v-good">fine</td></tr>
+    <tr><td>Everyone HUNT</td><td>6 / 10</td><td class="v-good">fine</td></tr>
+    <tr><td>Everyone RAID</td><td>6 / 10</td><td class="v-good">fine</td></tr>
+    <tr><td>Everyone OFF</td><td>6 / 10</td><td class="v-good">fine</td></tr>
+  </table>
+  <p class="v-warn" style="margin-top:10px">Caveat: in these runs the scripted player grows at most one Harrier and a Brood Pit or two, so the stances change what the units kill but not the result. This shows no stance breaks the game. It does not show which stance is best for someone who builds many units; that needs a person playing.</p>
+
+  <h2>Also in this batch</h2>
+  <p>The eat-a-limb pop-up now has a line about gorging: "A limb that eats grows: every meal makes it hit harder, faster and tougher, each meal more than the last. Keep feeding one limb and it becomes a monster."</p>
+
+  <p class="note">Technical write-up for an engineer or an AI: the "STANCES" bullet in C:\Users\Merry\dev\space-derelict\games\broodfall\DESIGN.md.</p>
+</main>
+</body>
+</html>

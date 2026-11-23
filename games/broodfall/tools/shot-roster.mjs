@@ -46,7 +46,7 @@ await new Promise((res, rej) => {
   server.stdout.on('data', (d) => { if (String(d).includes('localhost')) { clearTimeout(t); res(); } });
 });
 
-const browser = await chromium.launch();
+const browser = await chromium.launch({ args: ['--mute-audio'] });
 const ctx = await browser.newContext({ viewport: { width: 1400, height: 900 }, recordVideo: { dir: vidDir, size: { width: 1400, height: 900 } } });
 const page = await ctx.newPage();
 page.on('pageerror', (e) => console.log('  page error:', e.message));
@@ -146,12 +146,13 @@ try {
   check(home === 0, 'the spot went quiet: the sortie is over and they come home', `${home}`);
   await shot('5-home-again');
 
-  // 4. An alert: an engineer (the warriors' AUTO off, so the toast waits for SEND).
-  await page.click('#unit-roster button[data-auto="warrior"]');
-  await page.waitForTimeout(150);
-  const autoOff = await page.evaluate(() => window.broodfall.sim.groups.auto.warrior === false && window.broodfall.sim.groups.auto.harrier === true);
-  check(autoOff, 'the AUTO toggle turns the warriors\' self-answering off');
-  await page.evaluate(() => { const s = window.broodfall.sim; s.groups.auto.harrier = false; });
+  // 4. An alert: an engineer (the warriors' stance OFF, so the toast waits for SEND). The stance button cycles
+  // DEFEND -> HUNT -> RAID -> OFF.
+  for (let i = 0; i < 3; i++) { await page.click('#unit-roster button[data-auto="warrior"]'); await page.waitForTimeout(150); }
+  const autoOff = await page.evaluate(() => window.broodfall.sim.groups.stance.warrior === 'off' && window.broodfall.sim.groups.stance.harrier === 'hunt');
+  check(autoOff, 'the stance button cycles the warriors to OFF');
+  check((await page.textContent('#unit-roster button[data-auto="warrior"]')).trim() === 'OFF', 'the button reads OFF');
+  await page.evaluate(() => { const s = window.broodfall.sim; s.groups.stance.harrier = 'off'; });
   await page.evaluate((f) => {
     const s = window.broodfall.sim;
     const e = s.spawnEnemy('engineer', s.gates[0]);

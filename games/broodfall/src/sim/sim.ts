@@ -2256,7 +2256,11 @@ export class Sim {
         return n > 0 ? { ok: true } : { ok: false, err: 'no unit free to send' };
       }
       case 'set-auto': {
-        this.groups.auto[cmd.who] = cmd.on;
+        this.groups.setAuto(cmd.who, cmd.on);
+        return { ok: true };
+      }
+      case 'set-stance': {
+        this.groups.setStance(cmd.who, cmd.stance);
         return { ok: true };
       }
       case 'unit-order': {
@@ -5924,22 +5928,10 @@ export class Sim {
     this.events.push({ kind: 'harrier-lost', unitId: u.id });
   }
 
-  /** The science-caste body nearest a point anywhere on the board (a Harrier's quarry). */
-  private nearestScience(from: Vec): Enemy | null {
-    let best: Enemy | null = null;
-    let bd = Infinity;
-    for (const e of this.enemies) {
-      if (e.burrowed || !this.isRevealed(e) || this.isAirborne(e) || enemySpec(e.kind).caste !== 'science') continue;
-      const d = dist(from, e.pos);
-      if (d < bd) { bd = d; best = e; }
-    }
-    return best;
-  }
-
   /**
-   * Harriers. Unordered, a Harrier HUNTS: the nearest science-caste body anywhere in the city, run down at its speed
-   * and shot from its range; with none about, it fights the hive near its post (badly: its quills are made for the
-   * soft castes) and drifts home. Orders (move, attack, hold, return) come first.
+   * Harriers. Orders (move, attack, hold, return) come first; the stance (src/sim/groups.ts, HUNT by default) gives
+   * them: the science caste run down from cover, shot from its range (x2.6). Left alone it fights the hive near its post
+   * (badly: its quills are made for the soft castes) and drifts home.
    */
   private updateHarriers(): void {
     for (const u of [...this.harriers]) {
@@ -5974,13 +5966,8 @@ export class Sim {
         if (prey) shoot(prey);
         continue;
       }
-      // Hunting the science caste, anywhere.
-      const quarry = this.nearestScience(u.pos);
-      if (quarry) {
-        if (dist(u.pos, quarry.pos) <= B.harrierRange) shoot(quarry);
-        else this.walkTo(u, quarry.pos, B.harrierSpeed);
-        continue;
-      }
+      // What it hunts, and how far it goes for it, is its stance (src/sim/groups.ts: HUNT goes for the science caste
+      // from cover, RAID for the bases going up); left alone it holds its post.
       const post = u.guard ?? this.bodyPoint();
       const prey = this.preyNear(post, B.harrierLeash, u.pos, false);
       if (prey) {

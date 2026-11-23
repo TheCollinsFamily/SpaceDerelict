@@ -648,6 +648,25 @@ wants one, is ONE click for a whole group.** Every unit kind has a job it does b
 - **AUTO** (a toggle under each portrait that answers alerts): that kind answers its alerts by itself. Default ON for
   warriors and Harriers, OFF for Broodmothers (a mother parked brooding should stay parked unless the player says).
   Harriers already hunt science on their own, so a science alert sends nobody extra for them.
+- **STANCES replace the AUTO toggle (Collins, Nov 23 2026 — BUILT Nov 23):** "on the little critters you can generate and
+  control we should have an AI for auto handling them in one of two settings, defensive and hunter (which targets science
+  teams while trying to stay in cover)", then "and maybe an offensive as well that targets where bases are being set up".
+  The button under each fighter's portrait (warriors, Broodmothers, Harriers) names its stance; a click goes to the next:
+  - **OFF**: only what you order; they guard their post.
+  - **DEFEND** (warriors' default): whatever comes into COVER is fought (a party, an engineer, a dome, a station, an
+    outpost under attack); a chase is broken off once the quarry is out of reach of cover, and they come home.
+  - **HUNT** (Harriers' default): the science teams only. They wait in cover at the point nearest the closest team and strike
+    the moment one is within their reach of cover (a Harrier 170 px, its range; a biter 60-70 px); a team that walks out
+    of it is let go and they wait again.
+  - **RAID**: the engineers and field stations, anywhere on the board ("where bases are being set up"), then home.
+  COVER is a street inside your limbs' fire (`Sim.dangerAt`, the same map the science caste routes round) or on your creep.
+  The player's own orders always come first; a hurt unit off the creep still walks back onto it. Broodmothers stay OFF by
+  default (a mother parked brooding stays parked). The Harrier's old built-in "hunt the science caste anywhere" is gone:
+  that is what HUNT does now, from cover. Code: `STANCES`, `Groups.stancePass` in src/sim/groups.ts; `set-stance`
+  (`set-auto` still works: on = the kind's usual stance). Tests: tests/groups.test.ts "STANCES".
+  **Measured** (GAPS_MODE=expansion[,stance-defend|stance-hunt|stance-raid|noauto], 10 seeds, hold-12): 6/10 in every
+  setting. The scripted player grows few units (0-1 Harriers, a Pit or two), so the stance moves kills, not wins: it is a
+  tool for a player who builds units, not a balance lever.
 - **The old individual control** (click, box, the command panel, control groups: src/ui/command.ts) stays for players
   who want it; nothing above needs it.
 - **Measured** (`GAPS_MODE=roster` in tools/measure/gaps.measure.ts: the scripted player never selects a unit, releases

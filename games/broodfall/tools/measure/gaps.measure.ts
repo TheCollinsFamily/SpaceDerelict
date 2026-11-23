@@ -61,8 +61,10 @@ function run(seed: number) {
   if (MODE.includes('roster')) bot.roster = true;
   // nogroups = the low-micro layer off (no leak answers, no retreats to the creep, no alerts): the baseline for it.
   if (MODE.includes('nogroups')) (sim.groups as unknown as { tick: () => void }).tick = () => {};
-  // noauto = no unit kind answers alerts by itself (every AUTO toggle off).
-  if (MODE.includes('noauto')) for (const k of Object.keys(sim.groups.auto)) (sim.groups.auto as Record<string, boolean>)[k] = false;
+  // noauto = no unit kind does anything by itself (every stance OFF).
+  if (MODE.includes('noauto')) for (const k of Object.keys(sim.groups.stance)) (sim.groups.stance as Record<string, string>)[k] = 'off';
+  // stance-defend / stance-hunt / stance-raid = every fighter kind on that stance (src/sim/groups.ts STANCES, Nov 23 2026).
+  for (const st of ['defend', 'hunt', 'raid'] as const) if (MODE.includes('stance-' + st)) for (const k of ['warrior', 'mother', 'harrier'] as const) sim.groups.stance[k] = st;
   // shelterstart = the same, with a shelter standing at the start in the district nearest the body, so what an infested
   // shelter is worth is measured (in a normal run one comes at a draft, and a lost run may never reach it).
   if (MODE.includes('shelterstart')) {

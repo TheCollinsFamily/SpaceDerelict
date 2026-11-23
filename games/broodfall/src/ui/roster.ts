@@ -16,7 +16,7 @@
  */
 import type { IsoRenderer } from '../render/isoRender';
 import type { Sim } from '../sim/sim';
-import { ALERT_ANSWER, UNIT_KINDS, type UnitKind, type Who } from '../sim/groups';
+import { STANCES, STANCE_KINDS, UNIT_KINDS, type UnitKind, type Who } from '../sim/groups';
 import { artUrl } from '../render/art';
 
 export interface RosterHooks {
@@ -112,10 +112,12 @@ export function installRoster(hooks: RosterHooks): Roster {
     let html = fighters ? `<button class="ur-btn ur-all" data-who="all" title="ALL your fighters (not mules or Infestors). Then click where. Key: \`"><span class="ur-all-txt">ALL <b>${fighters}</b></span></button>` : '';
     present.forEach((p, i) => {
       const k = UNIT_KINDS.find((x) => x.kind === p.kind)!;
-      const answers = Object.values(ALERT_ANSWER).some((who) => who.includes(p.kind));
+      const answers = STANCE_KINDS.includes(p.kind);
+      const st = STANCES.find((x) => x.stance === sim.groups.stance[p.kind])!;
       html += `<div class="ur-slot"><button class="ur-btn" data-who="${p.kind}" title="All your ${k.name.toLowerCase()}. Then click where. Key: F${i + 1}">`
         + `<span class="ur-face" style="${portraitStyle(p.kind)}"></span><b class="ur-n">${p.n}</b><kbd>F${i + 1}</kbd></button>`
-        + (answers ? `<button class="ur-auto${sim.groups.auto[p.kind] ? ' on' : ''}" data-auto="${p.kind}" title="AUTO: they answer alerts by themselves">AUTO</button>` : '')
+        // The stance: what they do by themselves. A click goes to the next one (OFF, DEFEND, HUNT, RAID).
+        + (answers ? `<button class="ur-auto st-${st.stance}${st.stance !== 'off' ? ' on' : ''}" data-auto="${p.kind}" title="${st.tip}. Click for the next: ${STANCES.map((x) => x.name).join(' / ')}">${st.name}</button>` : '')
         + '</div>';
     });
     el.innerHTML = html;
@@ -127,7 +129,10 @@ export function installRoster(hooks: RosterHooks): Roster {
         ev.stopPropagation();
         const k = b.dataset.auto as UnitKind;
         const s = hooks.sim();
-        s.issue({ kind: 'set-auto', who: k, on: !s.groups.auto[k] });
+        const i = STANCES.findIndex((x) => x.stance === s.groups.stance[k]);
+        const next = STANCES[(i + 1) % STANCES.length];
+        s.issue({ kind: 'set-stance', who: k, stance: next.stance });
+        hooks.hint(`${KIND_WORD[k]}: ${next.tip.toUpperCase()}`);
         built = '';
       });
     });
@@ -186,7 +191,7 @@ export function installRoster(hooks: RosterHooks): Roster {
     const sim = hooks.sim();
     const r = hooks.renderer();
     const present = kindsPresent();
-    const sig = present.map((p) => `${p.kind}:${p.n}`).join(',') + '|' + present.map((p) => (sim.groups.auto[p.kind] ? 1 : 0)).join('') + (art.size ? 'a' : '');
+    const sig = present.map((p) => `${p.kind}:${p.n}`).join(',') + '|' + present.map((p) => sim.groups.stance[p.kind]).join('') + (art.size ? 'a' : '');
     if (sig !== built) { built = sig; rebuild(present); }
     el.classList.toggle('hidden', present.length === 0 || !r);
     el.querySelectorAll<HTMLButtonElement>('button[data-who]').forEach((b) => b.classList.toggle('on', b.dataset.who === armed));

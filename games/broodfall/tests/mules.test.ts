@@ -246,7 +246,9 @@ describe('the scripted player with mules', () => {
     // mules on 1, 5 and 14.
     // Re-measured Nov 23 2026 (the world unfolds: the Mule Sac opens on the shelf after wave 5, two organs a stage; harder
     // first waves): of seeds 1-16 it roots mules on 1, 3, 4 and 8.
-    for (const seed of [1, 3]) {
+    // Re-measured Nov 23 2026 (unit stances: warriors DEFEND from cover, Harriers HUNT from it, src/sim/groups.ts): of
+    // seeds 1-16 it roots mules on 4, 11 and 15.
+    for (const seed of [4, 11]) {
       const s = new Sim({ ...CFG, seed, organStage: true, directive: { kind: 'hold', waves: 12 } });
       const bot = new Autoplayer(seed + 1);
       bot.mules = true;
