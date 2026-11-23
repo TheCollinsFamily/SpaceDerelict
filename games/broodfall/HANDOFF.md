@@ -36,6 +36,22 @@ process only verified its own assumptions. The repo's CLAUDE.md carries the stan
   own CLAUDE.md with hard rules. Most important: **never deploy without Collins's explicit
   approval**, billing fails closed, and never log user content.
 
+## The LIMB STAT CARD on hover (Nov 23 2026)
+
+Collins, playtesting: "I think we need to signal things much better with stats on limbs on hover over and an explanation
+for those stats". Hovering one of your limbs (nothing armed) shows a stat card beside it (never over it): HP, HITS,
+DAMAGE, SPEED, DAMAGE / S, REACH in cells (support limbs: AURA, POINTS AT, STRENGTH, CYCLE), then SPECIAL verbs (splash,
+slow, poison, burn, pierce, shred, chains...), each with a muted one-line meaning, "base X" when boosted, and the
+sources by name (an inherited trait by the display name of the limb it came from and what it teaches, roof level, organ
+level, evolution, crown, a choir or engine nearby). Hovering a HAND card shows the same card for what it would be if
+placed now (banked sacrifice traits included). With a card armed, hovering a limb shows its card under a "click to eat
+it" banner (the click still eats). The click panel's stats row uses the same words (no raw ×1.00).
+- Words: `src/ui/limbStats.ts` (pure; `limbCard`, `handCard`, `traitsLine`), tested in `tests/limbStats.test.ts`.
+- Box: `src/ui/limbCard.ts` (rewrites its markup only when the content changes; refreshed 4×/s in the frame loop
+  by `limbHoverTick` in `src/main.ts`, hidden when the board is covered or the organ stage is open). Styles at the end
+  of `src/style.css` and `src/hud/themes/ship.css` (`#limb-card`).
+- Screens: `notes/screens/2026-11-23/limbcard-*.png` (1366x768 and 1600x1000).
+
 ## The EAT A LIMB explainer and the skirmish ORDER picker (Nov 23 2026)
 
 - **EAT A LIMB pop-up** (`src/ui/sacrificeExplainer.ts`, called from `maybeExplainSacrifice()` in `src/main.ts` on every card pick-up).
