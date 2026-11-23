@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gameplay Loop Review</title>
+<style>
+:root{--bg:#121416;--panel:#1a1f21;--ink:#e6e9ea;--dim:#9aa3a6;--line:#2c3236;--ok:#7fd08a;--warn:#ffb454;--bad:#ff6a55}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,sans-serif;margin:0;padding:24px 16px}
+main{max-width:1040px;margin:auto}h1{font-size:27px;margin:0 0 4px}h2{font-size:20px;margin:36px 0 8px;border-top:1px solid var(--line);padding-top:18px}
+.short{border-left:4px solid var(--warn);padding:10px 16px;background:var(--panel)}
+img{max-width:100%;border:1px solid var(--line);display:block}
+table{border-collapse:collapse;width:100%;font-size:14px}td,th{border:1px solid var(--line);padding:5px 8px;text-align:left;vertical-align:top}
+th{background:var(--panel)}.num td{text-align:right}.num td:first-child{text-align:left}
+.ok{color:var(--ok);font-weight:bold}.warn{color:var(--warn);font-weight:bold}.bad{color:var(--bad);font-weight:bold}
+.cap{color:var(--dim);font-size:14px}.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:700px){.pair{grid-template-columns:1fr}}
+.dec{background:var(--panel);border:1px solid var(--line);padding:10px 14px;margin:8px 0}
+.hot{background:#3a1712}
+</style></head><body><main>
+<h1>What the gameplay loop isn't thinking through</h1>
+<p class="cap">Broodfall, Nov 23 2026. I played it silently: headless with the sound muted, nothing on your screen. Sources:</p>
+<ul class="cap">
+<li>One skirmish in the real page, played through the play API, seed 11, photographed at every stage.</li>
+<li>The test bot over 6 full hold-12 runs, measured wave by wave.</li>
+<li>The test bot over 10 runs of each of the three skirmish orders.</li>
+</ul>
+
+<div class="short"><b>Short version:</b> the fighting works. The problem is that a run stops asking for decisions partway through. Five things do that:
+<ol>
+<li>How long a skirmish lasts is a hidden coin flip: 4 minutes, 9 minutes or 20.</li>
+<li>Every run is easy: the bot wins all 30, and waves 2 to 5 do no damage.</li>
+<li>By wave 9 the bot owns every organ, so the organ stage has no choices left.</li>
+<li>From wave 9 on, most science meat goes to waste.</li>
+<li>Royal meat basically never shows up in a skirmish.</li>
+</ol>
+One was a plain bug, and it is <span class="ok">fixed</span>: a draft could show the same district card twice. The rest are design calls for you, numbered at the bottom.</div>
+
+<h2>Scoreboard</h2>
+<table>
+<tr><th>Part of the loop</th><th>Verdict</th><th>The evidence, in a line</th></tr>
+<tr><td>The fight itself (limbs, sacrifice, creep, waves)</td><td class="ok">works</td><td>Late waves cost 10-20 limbs and 70-230 core HP each; you have to rebuild</td></tr>
+<tr><td>District draft</td><td class="ok">fixed today</td><td>"Residential Warren, Residential Warren, Provision District" → three different cards</td></tr>
+<tr><td>Skirmish length</td><td class="bad">lottery</td><td>Harvest ends at wave 5 (4 min), royal at wave 8 (9 min), hold at wave 12 (20 min), drawn at random</td></tr>
+<tr><td>Difficulty at one gate</td><td class="bad">too easy</td><td>The bot wins 30 of 30. Waves 2-5: zero core damage</td></tr>
+<tr><td>Organ stage, late</td><td class="warn">runs dry</td><td>All 24 organs owned by wave 9. After that it's only "level something"</td></tr>
+<tr><td>Organ stage, short runs</td><td class="warn">skippable</td><td>I won a harvest run with 0 organs and 251 chyme unspent</td></tr>
+<tr><td>Science meat, late</td><td class="warn">wasted</td><td>Waves 9-11: 60-86% of science earned is lost when the next wave starts</td></tr>
+<tr><td>Royal meat in skirmish</td><td class="warn">missing</td><td>About 5 royal per 12-wave run, all in wave 8, so Royal Decrees barely come up</td></tr>
+<tr><td>The hand</td><td class="warn">grey most of the time</td><td>No card affordable 50-90% of the time; late waves discard 5-6 cards each</td></tr>
+</table>
+
+<h2>The fix made today: no duplicate district cards</h2>
+<p>Drafts used to pick three offers that differed by <i>where</i> they would grow. Since yesterday you choose where to put the district, so two offers that differed only by place became the same card twice. Now the three cards always carry three different features (Warren, Research Quarter, Provision District, Temple Heights). It uses no new dice, so the rest of a run plays out the same. There is a new test over 40 boards, and all 938 tests pass.</p>
+<div class="pair">
+<div><b>Before</b> (same run, same wave)<img src="before-draft-duplicate.png" alt="Draft with two Residential Warren cards"></div>
+<div><b>Now</b><img src="after-draft-distinct.png" alt="Draft with Warren, Research Quarter, Provision District"></div>
+</div>
+
+<h2>1. A skirmish's length is a hidden coin flip</h2>
+<p>A skirmish draws its order at random: hold 12 waves, kill the royal, or bank 80 science. The bot on 10 seeds each:</p>
+<table class="num"><tr><th>Order</th><th>Wins</th><th>Ends in wave</th><th>Game time</th><th>Organs grown</th></tr>
+<tr><td>Bank 80 science</td><td>10/10</td><td>5 (every run)</td><td>4.2 min</td><td>5.5</td></tr>
+<tr><td>Kill the royal</td><td>10/10</td><td>8 (every run)</td><td>8.6 min</td><td>15.2</td></tr>
+<tr><td>Hold 12 waves</td><td>10/10</td><td>12</td><td>20.1 min</td><td>24</td></tr></table>
+<p>The harvest run ends partway through wave 5, before the waves have had a chance to get hard. That is exactly what I saw in the real page: "SAMPLE QUOTA FILLED" mid-siege, with 10 limbs, no organs, and the core never touched. The royal order always ends on wave 8, because that is the wave the royal is guaranteed to show up.</p>
+<img src="11-end-won.png" alt="Sample quota filled in wave 5 with the core untouched">
+<p class="cap">The real page, seed 11: won in wave 5 with zero organs and 251 chyme never spent.</p>
+
+<h2>2. Every run is easy at one gate</h2>
+<p>The bot doesn't play well (it never commands units or burrows), and it still wins every one of the 30 runs above. Waves 2 to 5 do no damage to the core at all. Danger shows up around wave 6 (51 HP that wave, then 134 and 229). The 2-3 gate wager is the only setting that makes a run hard. Without it, the first third of every run has no danger, and a harvest run never gets any.</p>
+
+<h2>3. The organ stage runs out of choices</h2>
+<p>Chyme rises from about 46 a wave to about 210 by wave 9. A new organ costs 20-60, so late in a run the shop can't absorb the income. The bot owns all 24 organs it can grow by wave 9, and after that it only levels them up. The whole list of 28 organs is also open at wave 1 of a skirmish, so a run doesn't unlock anything as it goes. In short runs it's the opposite problem: the harvest order ends before the organs matter.</p>
+<img src="11-w1-between.png" alt="The organ stage after wave 1: all 28 organs offered at once">
+<p class="cap">After wave 1: every organ in the game is already on the shelf.</p>
+
+<h2>4. Late in a run, science meat is wasted</h2>
+<p>War and science left unspent are lost when the next wave starts. War mostly gets spent, but science doesn't once the evolutions are bought:</p>
+<table class="num"><tr><th>Wave</th><th>Science earned</th><th>Science lost at next wave</th><th>Lost</th></tr>
+<tr><td>6</td><td>81</td><td>32</td><td>40%</td></tr><tr><td>9</td><td>336</td><td>204</td><td class="hot">61%</td></tr>
+<tr><td>10</td><td>174</td><td>133</td><td class="hot">76%</td></tr><tr><td>11</td><td>322</td><td>278</td><td class="hot">86%</td></tr></table>
+<p>So in the late game, killing science-caste bodies pays out mostly in meat you can't use. The researchers are the most interesting enemy, and by then they're worth almost nothing.</p>
+
+<h2>5. Royal meat is missing from skirmish</h2>
+<p>Across 6 whole hold-12 runs the bot earned about 5 royal meat per run, all of it in one royal event in wave 8, and none in the other 11 waves. The Royal Decrees panel sits on the bar the whole run with nothing to buy. In a skirmish, the "jackpot that is also the hardest fight" design never happens.</p>
+
+<h2>6. The hand is grey most of the time</h2>
+<p>Sampled every half second, no card in the hand was affordable 92% of the time in wave 1 and still 48-68% in the late waves. Meat comes in a body at a time and gets spent the moment it covers a card. Moment to moment, the loop is "wait for the bank, then click". The other cost is choice: late waves discard 5-6 cards each, so the 4-card hand is often holding the wrong limbs. Part of this is just how the bot plays, but a person sees the same grey hand.</p>
+
+<h2>Your decisions</h2>
+<div class="dec"><b>1. Skirmish length.</b> Recommended: let the player pick the order at deploy and show how long each one runs. Also raise the harvest quota so it lasts about as long as the royal order (about 160 science instead of 80, which ends around wave 8).</div>
+<div class="dec"><b>2. Difficulty at one gate.</b> Recommended: make waves 2-5 actually threaten the core, for example by pulling the wave 6 pressure earlier, so the bot drops to about 7-8 wins in 10 at one gate. Or keep the easy default and treat the gates as the real difficulty setting.</div>
+<div class="dec"><b>3. Organs running out.</b> Recommended: have the organ stage offer a few organs each wave instead of the whole list (the same kind of draft as districts), or cap how many organs can be grown. Either keeps a choice in every organ stage.</div>
+<div class="dec"><b>4. Wasted late science.</b> Recommended: science left at the wave's start becomes chyme (for example, 3 science = 1 chyme) instead of vanishing, which gives late researchers value again. Or add a late science sink, like re-rolling an evolution.</div>
+<div class="dec"><b>5. Royal in skirmish.</b> Recommended: in hold-12 skirmishes, open the court at wave 6, so royal meat and decrees appear once a run is underway.</div>
+<p class="cap">Technical notes for an engineer or an AI: the measurements are tools/measure/loop.measure.ts and tools/measure/directives.measure.ts; the draft fix is in src/sim/citymap.ts draftOffers, with tests/draft-distinct.test.ts.</p>
+</main></body></html>

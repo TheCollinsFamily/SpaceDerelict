@@ -415,6 +415,17 @@ export function draftOffers(map: CityMap, rng: Rng, count: number, science = tru
   // The science caste closed (Sim.scienceOpen: nothing this run could spend its meat on): a Research Quarter is offered
   // as a plain warren, after the draw, so the dice fall as they would have.
   if (!science) for (const o of options) if (o.feature === 'science') o.feature = 'plain';
+  // No two cards of one draft carry the same feature (Nov 23 2026). Since the player places the district (Nov 22), two
+  // offers that differed only by WHERE they grew are the same card twice: a playtest draft showed "Residential Warren,
+  // Residential Warren, Provision District". A repeated feature is dealt the first one the draft lacks, in a fixed order
+  // (no dice: the run's other draws are untouched).
+  if (count > features.length) return options; // a wide draw (12 to find a shelter site) is a pool, not a hand of cards
+  const pool = features.filter((f) => science || f !== 'science');
+  const used = new Set<PlateFeature>();
+  for (const o of options) {
+    if (used.has(o.feature)) o.feature = pool.find((f) => !used.has(f)) ?? o.feature;
+    used.add(o.feature);
+  }
   return options;
 }
 
