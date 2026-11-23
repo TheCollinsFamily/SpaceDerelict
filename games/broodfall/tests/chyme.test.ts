@@ -81,7 +81,10 @@ describe('chyme accrues from what was EARNED', () => {
     expect(s.waveChyme).toBe(0);
   });
 
-  it('meat left UNSPENT renders nothing: a rich hoarder and a spender earn the same chyme', () => {
+  // Since Nov 23 2026 this holds for WAR only: unspent SCIENCE is rendered into chyme at the wave's start (3 science = 1),
+  // because late in a run most of the researchers' meat spoiled (60-86% of it in waves 9-11) and the most interesting
+  // enemy was worth nothing. War is the generic currency and still spoils. DESIGN.md "The world unfolds".
+  it('WAR left UNSPENT renders nothing: a rich war hoarder and a spender earn the same chyme', () => {
     const play = (hoard: number) => {
       const s = new Sim(CFG);
       s.issue({ kind: 'call-early' });
@@ -96,6 +99,30 @@ describe('chyme accrues from what was EARNED', () => {
     const hoarder = play(500);
     expect(hoarder.chyme).toBeCloseTo(spender.chyme);
   });
+
+  it('SCIENCE left unspent is rendered into chyme at the wave start, 3 to 1, and told in the next tally', () => {
+    const play = (science: number) => {
+      const s = new Sim(CFG);
+      s.issue({ kind: 'call-early' });
+      clearWave(s);
+      s.meat.science += science;
+      priv(s).phaseElapsed = 999;
+      s.takeEvents();
+      s.issue({ kind: 'call-early' });
+      const cleared = s.takeEvents().find((e) => e.kind === 'meat-cleared');
+      const atStart = s.chyme;
+      clearWave(s);
+      const tally = s.takeEvents().find((e) => e.kind === 'chyme-tally');
+      return { s, cleared, atStart, tally };
+    };
+    const spender = play(0);
+    const hoarder = play(100);
+    expect(hoarder.s.meat.science).toBe(0);
+    expect(hoarder.atStart - spender.atStart).toBe(Math.floor(100 / B.scienceChymeRate));
+    expect(hoarder.cleared).toMatchObject({ kind: 'meat-cleared', chyme: 33, scienceIn: 99, science: 1 });
+    expect(hoarder.tally).toMatchObject({ kind: 'chyme-tally', science: 33 });
+    expect(spender.tally && 'science' in spender.tally ? spender.tally.science : undefined).toBeUndefined();
+  });
 });
 
 describe('chyme is BANKED; the limbs meat still spoils', () => {
@@ -108,7 +135,7 @@ describe('chyme is BANKED; the limbs meat still spoils', () => {
     priv(s).phaseElapsed = 999;
     s.issue({ kind: 'call-early' });
     expect(s.phase).toBe('siege');
-    expect(s.chyme).toBe(123.5);
+    expect(s.chyme).toBe(123.5 + Math.floor(9 / B.scienceChymeRate)); // the science is rendered (Nov 23 2026), not lost
     expect(s.meat.war).toBe(0);
     expect(s.meat.science).toBe(0);
   });

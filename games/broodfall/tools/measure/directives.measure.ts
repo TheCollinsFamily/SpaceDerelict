@@ -7,9 +7,10 @@ import { it } from 'vitest';
 import { Autoplayer } from '../../src/sim/autoplayer';
 import { DT, Sim } from '../../src/sim/sim';
 import type { Directive } from '../../src/sim/types';
+import { BALANCE as B } from '../../content/data';
 
 it('directive lengths', () => {
-  const dirs: Directive[] = [{ kind: 'hold', waves: 12 }, { kind: 'royal', count: 1 }, { kind: 'harvest', science: 80 }];
+  const dirs: Directive[] = [{ kind: 'hold', waves: 12 }, { kind: 'royal', count: 1 }, { kind: 'harvest', science: B.harvestScience }];
   const out: string[] = [];
   for (const d of dirs) {
     const rows: string[] = [];

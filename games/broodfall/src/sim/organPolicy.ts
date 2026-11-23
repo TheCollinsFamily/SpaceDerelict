@@ -117,7 +117,8 @@ export const RUMEN_POLICY: { when: 'early' | 'mid' | 'late' | 'never' } = { when
 
 /** The organs the scripted player wants next, in the order it buys them (themes, free-thing organs, creep, hearts). */
 function wantedOrgans(sim: Sim): OrganId[] {
-  const have = (id: OrganId) => sim.organs.some((o) => o.organ === id);
+  // An unfolding skirmish's shelf (Nov 23 2026): what is not on it yet is not wanted yet.
+  const have = (id: OrganId) => sim.organs.some((o) => o.organ === id) || !sim.organOnShelf(id);
   const themes = sim.organs.filter((o) => ORGAN_BY_ID[o.organ].kind === 'theme').length;
   const out: OrganId[] = [];
   const w = RUMEN_POLICY.when;
@@ -131,7 +132,7 @@ function wantedOrgans(sim: Sim): OrganId[] {
   if (next) out.push(next);
   if (themes >= 2) { const c = CREEP_ORDER.find((id) => !have(id)); if (c) out.push(c); }
   const hearts = sim.organs.filter((o) => o.organ === 'heart').length;
-  if (themes >= 2 && hearts < Math.floor(themes / 2)) out.push('heart');
+  if (themes >= 2 && hearts < Math.floor(themes / 2) && sim.organOnShelf('heart')) out.push('heart');
   return out;
 }
 

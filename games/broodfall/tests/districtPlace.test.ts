@@ -168,7 +168,9 @@ describe('placing a drafted district (Nov 22 2026)', () => {
 
   it('a placed and turned district replays the same from the saved orders', () => {
     const cmds: Array<{ t: number; c: Command }> = [];
-    const a = new Sim({ ...CFG, seed: 11, directive: { kind: 'hold', waves: 12 } });
+    // With the organ stage, as the game is played (Nov 23 2026: the harder first waves beat the scripted player without
+    // its organs before its second draft).
+    const a = new Sim({ ...CFG, seed: 11, organStage: true, directive: { kind: 'hold', waves: 12 } });
     const issue = a.issue.bind(a);
     a.issue = (c: Command) => { cmds.push({ t: a.tickCount, c: structuredClone(c) }); return issue(c); };
     const bot = new Autoplayer(11);
@@ -187,7 +189,7 @@ describe('placing a drafted district (Nov 22 2026)', () => {
       a.tick();
     }
     expect(n, `outcome ${a.outcome} wave ${a.waveNumber} phase ${a.phase}`).toBeGreaterThanOrEqual(2);
-    const b = new Sim({ ...CFG, seed: 11, directive: { kind: 'hold', waves: 12 } });
+    const b = new Sim({ ...CFG, seed: 11, organStage: true, directive: { kind: 'hold', waves: 12 } });
     replayRun(b, { cmds, ticks: a.tickCount });
     expect(b.map.slots.map((x) => x?.pattern.id ?? null)).toEqual(a.map.slots.map((x) => x?.pattern.id ?? null));
     expect(b.map.cells).toEqual(a.map.cells);

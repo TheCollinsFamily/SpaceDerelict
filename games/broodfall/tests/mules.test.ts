@@ -244,7 +244,9 @@ describe('the scripted player with mules', () => {
     // castesFromWave): of seeds 1-16 it roots mules on 2, 3, 9 and 15 (`npx vite-node tools/creep-diag-runs.ts 200 mules 16`).
     // Re-measured Nov 22 2026 (chyme and the Rumen change what the scripted player grows when): of seeds 1-16 it roots
     // mules on 1, 5 and 14.
-    for (const seed of [1, 5]) {
+    // Re-measured Nov 23 2026 (the world unfolds: the Mule Sac opens on the shelf after wave 5, two organs a stage; harder
+    // first waves): of seeds 1-16 it roots mules on 1, 3, 4 and 8.
+    for (const seed of [1, 3]) {
       const s = new Sim({ ...CFG, seed, organStage: true, directive: { kind: 'hold', waves: 12 } });
       const bot = new Autoplayer(seed + 1);
       bot.mules = true;

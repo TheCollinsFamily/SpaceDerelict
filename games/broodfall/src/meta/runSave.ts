@@ -12,8 +12,11 @@ export interface RunSave {
    * 2 since CHYME (Nov 22 2026: organs bought with chyme, DESIGN.md "Chyme"). A v1 save was played when organs cost war
    * and science; it is loaded with SimConfig.organEconomy 'meat', so its orders replay into the run it was, and that one
    * deployment is finished under the rules it was started under. The next deployment is chyme.
+   * 3 since the skirmish world UNFOLDS (Nov 23 2026: the organ shelf opens a block at a time, organsPerStage, the court
+   * from courtFromWave; DESIGN.md "The world unfolds"). A v2 skirmish is loaded with SimConfig.unfold false, so an organ
+   * its player grew at wave 1 is not refused on replay.
    */
-  v: 1 | 2;
+  v: 1 | 2 | 3;
   /** The address the run was played at (its seed set), so the page around the board is the same one. */
   search: string;
   kind: 'campaign' | 'skirmish';
@@ -34,12 +37,14 @@ export function loadRunSave(): RunSave | null {
   try {
     const raw = localStorage.getItem(KEY);
     const r = raw ? (JSON.parse(raw) as RunSave) : null;
-    return r && (r.v === 1 || r.v === 2) && r.cfg && Array.isArray(r.cmds) ? migrateRunSave(r) : null;
+    return r && (r.v === 1 || r.v === 2 || r.v === 3) && r.cfg && Array.isArray(r.cmds) ? migrateRunSave(r) : null;
   } catch { return null; }
 }
 
 /** A save from before chyme (v1) replays under the economy it was played in. */
 export function migrateRunSave(r: RunSave): RunSave {
+  // A save from before the world unfolded (v1, v2) replays with the whole shelf open, as it was played.
+  if (r.v !== 3 && r.cfg.unfold === undefined) r = { ...r, cfg: { ...r.cfg, unfold: false } };
   if (r.v !== 1 || r.cfg.organEconomy) return r;
   return { ...r, cfg: { ...r.cfg, organEconomy: 'meat' } };
 }

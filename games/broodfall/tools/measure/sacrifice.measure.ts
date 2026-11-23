@@ -27,6 +27,7 @@ function dps(sim: Sim, t: Tower): number {
 function run(seed: number, policy: Policy) {
   const sim = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed, directive: { kind: 'hold', waves: 12 }, organStage: true });
   const bot = new Autoplayer(seed + 1);
+  const shares: number[] = []; const top: Record<string, number> = {}; let lastWave = -1;
   let builds = 0; let thrown = 0; let eats = 0; let peakShare = 0; let peakPips = 0;
   const issue = sim.issue.bind(sim);
   sim.issue = (cmd) => {
@@ -64,29 +65,33 @@ function run(seed: number, policy: Policy) {
   let ticks = 0;
   while (sim.outcome === 'playing' && ticks < 30000) {
     bot.act(sim, DT); sim.tick(); sim.takeEvents(); ticks++;
-    if (ticks % 300 === 0) {
+    if (ticks % 300 === 0) peakPips = Math.max(peakPips, ...sim.towers.map((t) => t.pips.length), 0);
+    // The top limb's share, measured as each wave starts from wave 4 on (early on one limb IS the body).
+    if (sim.waveNumber >= 4 && sim.waveNumber !== lastWave) {
+      lastWave = sim.waveNumber;
       const all = sim.towers.map((t) => dps(sim, t));
       const total = all.reduce((a, b) => a + b, 0);
-      if (total > 0) peakShare = Math.max(peakShare, Math.max(...all) / total);
-      peakPips = Math.max(peakPips, ...sim.towers.map((t) => t.pips.length), 0);
+      if (total > 0) { const k = all.indexOf(Math.max(...all)); shares.push(all[k] / total); top[sim.towers[k].family] = (top[sim.towers[k].family] ?? 0) + 1; }
     }
   }
-  return { sim, eats, thrown, peakShare, peakPips };
+  peakShare = shares.length ? Math.max(...shares) : 0;
+  return { sim, eats, thrown, peakShare, peakPips, top };
 }
 
 it('sacrifice and power', () => {
   const out: string[] = [];
   for (const policy of ['never', 'default', 'greedy', 'tall'] as Policy[]) {
-    let wins = 0; let waves = 0; let core = 0; let eats = 0; let thrown = 0; let share = 0; let pips = 0; let interest = 0; let stolen = 0;
+    let wins = 0; let waves = 0; let core = 0; let eats = 0; let thrown = 0; let share = 0; let pips = 0; let interest = 0; let stolen = 0; const tops: Record<string, number> = {};
     for (let seed = 1; seed <= SEEDS; seed++) {
       const r = run(seed, policy);
       if (r.sim.outcome === 'won') wins++;
       waves += r.sim.wavesCleared; core += Math.max(0, r.sim.coreHp) / r.sim.coreMaxHp;
       eats += r.eats; thrown += r.thrown; share += r.peakShare; pips += r.peakPips; interest += r.sim.interest;
-      stolen += (r.sim.stats as unknown as { towersStolen?: number }).towersStolen ?? 0;
+      for (const [k, v] of Object.entries(r.top)) tops[k] = (tops[k] ?? 0) + v;
+      stolen +=(r.sim.stats as unknown as { towersStolen?: number }).towersStolen ?? 0;
     }
     const n = SEEDS;
-    out.push(`${policy.padEnd(8)} wins ${wins}/${n} · cleared ${(waves / n).toFixed(1)} · core ${(core / n * 100).toFixed(0)}% · eats ${(eats / n).toFixed(1)} · meat thrown away ${(thrown / n).toFixed(0)} · most bonuses on one limb ${(pips / n).toFixed(1)} · top limb share of dps ${(share / n * 100).toFixed(0)}% · interest at end ${(interest / n).toFixed(1)} · limbs stolen ${(stolen / n).toFixed(1)}`);
+    out.push(`${policy.padEnd(8)} wins ${wins}/${n} · cleared ${(waves / n).toFixed(1)} · core ${(core / n * 100).toFixed(0)}% · eats ${(eats / n).toFixed(1)} · meat thrown away ${(thrown / n).toFixed(0)} · most bonuses on one limb ${(pips / n).toFixed(1)} · top limb's peak share of dps (wave 4 on) ${(share / n * 100).toFixed(0)}% · interest at end ${(interest / n).toFixed(1)} · limbs stolen ${(stolen / n).toFixed(1)} · top limb by family ${JSON.stringify(tops)}`);
   }
   // eslint-disable-next-line no-console
   console.log('\n' + out.join('\n'));

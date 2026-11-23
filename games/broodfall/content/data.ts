@@ -446,9 +446,13 @@ export const ENEMIES: readonly EnemySpec[] = [
  */
 /** WAR waves only — science visits with the researchers, royals with the siege. */
 export const WAVE_TABLE: readonly Partial<Record<string, number>>[] = [
-  { responder: 8 },                                            // tier 0: first response
-  { responder: 8, militia: 6, skitterling: 4 },                // tier 1: militia muster
-  { militia: 12, soldier: 6, splitter: 1 },                    // tier 2: the army arrives
+  // Rows 0-2 retuned Nov 23 2026 (Collins: "round one should be losable but still something of a tutorial"): more bodies
+  // and the skitterlings' rush in the first waves, so a body that builds nothing or builds blind loses the core in wave 1-2
+  // while a chokepoint clears it (DESIGN.md "The world unfolds"). Were { responder: 8 }, { responder: 8, militia: 6,
+  // skitterling: 4 }, { militia: 12, soldier: 6, splitter: 1 }.
+  { responder: 12, skitterling: 6 },                           // tier 0: first response
+  { responder: 10, militia: 14, soldier: 2, skitterling: 10 }, // tier 1: militia muster
+  { militia: 16, soldier: 8, splitter: 3, skitterling: 8 },    // tier 2: the army arrives
   { militia: 8, soldier: 8, elite: 2, flier: 4, drummer: 1, splitter: 2, stalker: 1, flametrooper: 1 },  // tier 3: air support, war-drums, the first shadows, the first flamer
   { soldier: 10, elite: 5, flier: 5, sapper: 3, bomber: 2, drummer: 1, splitter: 2, mortar: 1, cannon: 1, stalker: 2, shadewing: 1, flametrooper: 2, aegis: 1 },  // tier 4: sappers climb, siege engines, shadows take wing
   { soldier: 12, elite: 7, flier: 6, sapper: 4, phalanx: 2, tender: 2, bomber: 2, carapace: 1, mortar: 2, cannon: 1, stalker: 2, shadewing: 2, ghostsapper: 1, flametrooper: 2, aegis: 2 },  // tier 5: the shield wall marches tended
@@ -474,7 +478,9 @@ export const BALANCE = {
   coreHp: 1500,
   /** Directive targets (the win is a deployment order, never a biomass bar). */
   holdWaves: 12,
-  harvestScience: 80,
+  // 80 until Nov 23 2026: the harvest order ended in wave 5 (4 min) while hold-12 ran 20. Retuned so every skirmish order
+  // lasts a comparable run (about waves 8-10): DESIGN.md "The world unfolds", tools/measure/directives.measure.ts.
+  harvestScience: 900,
   royalGuaranteeWave: 8,
   /** Biomass per second, base / per heart. */
   biomassBase: 1.1,
@@ -512,8 +518,9 @@ export const BALANCE = {
   draftEveryWaves: 3,
   draftCreepSurge: 45,
   callEarlyRate: 0.8,
-  squadSize: 3,
-  squadInterval: 3.1,
+  // 3 every 3.1 s until Nov 23 2026: a chokepoint ate the first waves a squad at a time and they never touched the core.
+  squadSize: 4,
+  squadInterval: 2.5,
   /**
    * The clearing wage in WAR meat (the limbs'). Was 22 + 4/wave until CHYME (Nov 22 2026). The organs no longer take war,
    * so the clear is now paid in chyme (the ration below) and the limbs' war comes from the bodies alone: measured, that
@@ -584,7 +591,9 @@ export const BALANCE = {
    *  just fed the economy). 10-seed sweep: 46 → 9/10, 38 → 7, 32 → 4.
    *  36 vs 37 straddles a tier boundary (naive 3/10 vs 7/10): 37 kept for
    *  margin — THIS is the difficulty knob. */
-  threatPerTier: 21,
+  // 21 until Nov 23 2026: the naive player won 30 of 30 and waves 2-5 never touched the core (notes/screens/2026-11-23/loop).
+  // At 15 the air (tier 3) comes in wave 4 instead of 6; tier 6 is still gated by tier6Threat.
+  threatPerTier: 15,
   /** The hive escalates procedurally as the campaign drags on. */
   threatPerWaveCleared: 5,
   /** Kill vengeance is real but not the main driver of escalation. */
@@ -608,8 +617,24 @@ export const BALANCE = {
   brainInterest: 3,
   interestPerPip: 0.5,
   studySeconds: 6,
+  /**
+   * THE WORLD UNFOLDS IN A SKIRMISH (Nov 23 2026, Collins: "remember you want an UNFOLDING game world, not dropping
+   * everything (science, royals etc.) at once"). Between waves the body knits at most organsPerStage new organs (a
+   * Tendril Root is tissue, not an organ: free of it; levels are free of it), so a late organ stage is a choice, not a
+   * shopping list. From courtFromWave the court sends a detachment with every wave (consorts and veil matrons: royal
+   * meat for the decrees, a mid-run layer), one more body every two waves, at most courtMax. Unspent SCIENCE is
+   * rendered into chyme when a wave starts (scienceChymeRate science = 1 chyme) instead of spoiling. Skirmish only
+   * (Sim.unfolds); the campaign has its own unlocks. DESIGN.md "The world unfolds".
+   */
+  organsPerStage: 2,
+  /** An unfolding skirmish's first waves climb a tier a wave up to this one (Sim.tierFor). */
+  tierLadder: 2,
+  courtFromWave: 6,
+  courtMax: 4,
+  scienceChymeRate: 3,
   /** Royal event. */
-  royalThreat: 240,
+  // 240 until Nov 23 2026; the faster tier ladder (threatPerTier 15) would have brought her in wave 6. At 380, wave 8-9.
+  royalThreat: 380,
   royalEscort: 6,
   // Royal meat is counted in POINTS (a consort/matron pays 1, the royal 3): a
   // point buys a surge or a limb's third evolution stage.
@@ -690,7 +715,9 @@ export const BALANCE = {
   /** The desperation row of the wave table needs this much threat, not just the
    *  ladder — a standard hold-12 tops out around 330, so tier 6 belongs to long
    *  runs and deliberate escalation (royal bait, challenge gland). */
-  tier6Threat: 192,          // scaled with the tier ladder (338 x threatPerTier/37); bladders every 2 turns, Sep 28
+  // 192 until Nov 23 2026 (scaled with the tier ladder, 338 x threatPerTier/37; bladders every 2 turns, Sep 28). With the
+  // ladder at 15 a tier, 192 brought "everything they have" in wave 6 and the runs broke there; at 320 it comes in wave 8.
+  tier6Threat: 320,
   /** Tunnelers surface at this fraction of the gate->core flow distance. */
   tunnelerSurfaceFrac: 0.45,
   /** Spore sling: player-aimed creep logistics. */

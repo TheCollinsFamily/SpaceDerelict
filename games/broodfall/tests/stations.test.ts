@@ -14,7 +14,7 @@ import type { Enemy, Harrier, SimConfig, Vec } from '../src/sim/types';
 const CFG: SimConfig = { gridW: 50, gridH: 40, cellPx: 26, seed: 4242 };
 type P = {
   spawnEnemy(kind: string, atGate?: number): Enemy;
-  sendEngineers(): void; engineerTimer: number; phase: string; waveNumber: number;
+  sendEngineers(): void; engineerTimer: number; phase: string; waveNumber: number; phaseElapsed: number; spawnQueue: string[];
   walkingUnits(): Array<{ pos: Vec; hp: number; maxHp: number }>;
   creepPace(at: Vec): number; preyNear(at: Vec, r: number, from: Vec, skipScience: boolean): Enemy | null;
 };
@@ -23,8 +23,12 @@ const P = (s: Sim) => s as unknown as P;
 /** A board grown a while, its creep pushed out a little, interest high enough for engineers. */
 function board(seed = 4242): Sim {
   const s = new Sim({ ...CFG, seed });
-  for (let i = 0; i < 900; i++) s.tick();
-  s.enemies.length = 0;
+  // Nobody builds here: since Nov 23 2026 a body that builds nothing loses its core in wave 1-2 (DESIGN.md "The world
+  // unfolds"), so the waves are cleared as they come while the board grows; then the board is put where these tests
+  // always found it (the old 90 s fell early in wave 2): a wave under way, its war still coming, early in its science window.
+  for (let i = 0; i < 900; i++) { s.tick(); s.enemies.length = 0; }
+  P(s).phaseElapsed = 5;
+  P(s).spawnQueue.push('responder');
   Object.defineProperty(s, 'interest', { get: () => 20, configurable: true });
   P(s).waveNumber = B.engineerMinWave;
   P(s).engineerTimer = 1e9; // no engineers but the ones a test sends

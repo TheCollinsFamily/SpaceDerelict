@@ -151,7 +151,9 @@ describe('a big limb on the board', () => {
     expect(s.issue({ kind: 'build', cardIndex: 0, cell }).ok).toBe(true);
     const t = s.towers[s.towers.length - 1];
     expect(t.cells).toHaveLength(4);
-    for (let i = 0; i < 1200; i++) s.tick();
+    // The waves are kept off (Nov 23 2026: the first waves are now big enough to tear through a lone den): her five are
+    // about the den, not the fight.
+    for (let i = 0; i < 1200; i++) { s.tick(); s.enemies.length = 0; }
     if (s.towers.some((x) => x.id === t.id)) {
       expect(s.broodlings.filter((b) => b.motherId === t.id).length).toBeGreaterThan(3);
     }

@@ -31,7 +31,7 @@ import { UPGRADES, UPGRADE_COST } from '../../content/upgrades';
 import {
   BRAIN_DRAW_MULT, CATAPULT_REACH, REVEAL_RANGE, DEPOSITS, FEATURES, FEATURE_FAVORED_LEVEL, FEATURE_LEVEL, METEOR_THEME,
   BLADDER_TURNS, PLINTH_MAX_HEIGHT, PLINTH_TURNS, SEEDLING_FLIGHT, SEEDLING_TURNS, CYST_NODES, LINING_DPS, MIRE_SLOW, NODE_HP, NODE_RADIUS, NODE_TRAMPLE, NODE_REACH, ORGAN_BY_ID, ORGAN_DEFS, ORGAN_LEVEL_POTENCY, ORGAN_LEVEL_TEMPO,
-  LEGACY_ORGAN_COST, METEOR_LEVEL_CHYME, RUMEN_FEED_CAP, RUMEN_FERMENT_CAP, RUMEN_FERMENT_PER, RUMEN_GLAND_BONUS, RUMEN_PER_BODY,
+  LEGACY_ORGAN_COST, METEOR_LEVEL_CHYME, ORGAN_SHELF, SHELF_AFTER, RUMEN_FEED_CAP, RUMEN_FERMENT_CAP, RUMEN_FERMENT_PER, RUMEN_GLAND_BONUS, RUMEN_PER_BODY,
   type OrganDef,
 } from '../../content/underground';
 import { createUnderground, neighbours4, type Underground } from './underground';
@@ -315,11 +315,18 @@ export class Sim {
   waveChyme = 0;
   /** What the Rumen made this wave (its feed as bodies are digested, its ferment at the clear) and over the run. */
   waveRumen = 0;
+  /** Chyme rendered from the science left unspent when this wave started (Nov 23 2026), told in this wave's tally. */
+  waveSciChyme = 0;
+  /** New organs knit in this organ stage (an unfolding run allows BALANCE.organsPerStage; roots are free of it). */
+  organsThisStage = 0;
   rumenEarned = 0;
   /** What the Rumen has taken to feed on this wave, counted at the kills (its feed cap). */
   rumenFed = 0;
   /** The last clear's chyme tally (the organ stage shows what the wave earned, and why). */
-  lastChymeTally: { wave: number; digested: number; ration: number; earned: number; rumen?: number } | null = null;
+  lastChymeTally: { wave: number; digested: number; ration: number; earned: number; rumen?: number; science?: number } | null = null;
+  private courtOpenedTold = false;
+  /** Study parties so far (the first is told: the science caste is a new layer, Nov 23 2026). */
+  private sciencePartiesSeen = 0;
   biomass = 0;
   coreHp: number = B.coreHp;
   coreMaxHp: number = B.coreHp;
@@ -642,7 +649,17 @@ export class Sim {
 
   /** What wave `n` is made of: the wave table's row for the tier, or the court's row while the Host is late. */
   private waveComp(n: number): Partial<Record<string, number>> {
-    return this.courtWaveAt(n) ? COURT_WAVES[Math.min(n - 1, COURT_WAVES.length - 1)] : WAVE_TABLE[this.tier];
+    return this.courtWaveAt(n) ? COURT_WAVES[Math.min(n - 1, COURT_WAVES.length - 1)] : WAVE_TABLE[this.tierFor(n)];
+  }
+
+  /**
+   * The tier wave n comes at. An unfolding skirmish climbs the first rungs one a wave (wave 2 at least tier 1, wave 3 at
+   * least tier 2, to BALANCE.tierLadder): the response is told one new rank at a time (responders, the militia, the army),
+   * and the threat takes it on from there. Higher TYPES, never harder ones (DESIGN.md "The pressure curve").
+   */
+  tierFor(n: number): number {
+    const t = this.tier;
+    return this.unfolds ? Math.max(t, Math.min(n - 1, B.tierLadder, WAVE_TABLE.length - 1)) : t;
   }
 
   // ---------- derived ----------
@@ -1491,6 +1508,51 @@ export class Sim {
   }
 
   /**
+   * THE WORLD UNFOLDS (Nov 23 2026, Collins: "remember you want an UNFOLDING game world, not dropping everything (science,
+   * royals etc.) at once"): a skirmish's organ shelf opens a block at a time, the body knits at most organsPerStage organs
+   * between waves, and the court comes from courtFromWave. The campaign has its own unlocks (organPool), a defence its one
+   * siege, the last mission its court waves: none of them unfolds.
+   */
+  get unfolds(): boolean {
+    if (this.cfg.unfold !== undefined) return this.cfg.unfold;
+    return !!this.cfg.organStage && !this.cfg.organPool && !this.cfg.oneWave && !this.cfg.lateHost && !this.meatOrgans;
+  }
+
+  /** Is this organ on the shelf now (always, in a run that does not unfold, or one the run started with)? */
+  organOnShelf(organ: OrganId): boolean {
+    if (!this.unfolds || (this.cfg.startOrgans ?? []).includes(organ)) return true;
+    return this.wavesCleared >= (SHELF_AFTER[organ] ?? 0);
+  }
+
+  /** The wave after which an organ not yet on the shelf comes onto it (null: it is on it). */
+  organOpensAfter(organ: OrganId): number | null {
+    return this.organOnShelf(organ) ? null : SHELF_AFTER[organ] ?? null;
+  }
+
+  /** New organs the body may still knit this organ stage (Infinity in a run that does not unfold). */
+  get organsLeftThisStage(): number {
+    return this.unfolds ? Math.max(0, B.organsPerStage - this.organsThisStage) : Infinity;
+  }
+
+  /** Is the court on the board's bar yet: a run where it can come, and (unfolding) once it has opened or a point is held. */
+  get courtShown(): boolean {
+    if (!this.royalOpen) return false;
+    return !this.unfolds || this.waveNumber >= B.courtFromWave || this.meat.royal > 0 || this.royalSpawned;
+  }
+
+  /** The court's detachment in wave n of an unfolding run: consorts and matrons by turns, one more every two waves. */
+  courtDetachment(n: number): Partial<Record<EnemyKind, number>> {
+    if (!this.unfolds || !this.royalOpen || n < B.courtFromWave || this.courtWaveAt(n)) return {};
+    const k = Math.min(B.courtMax, 1 + Math.floor((n - B.courtFromWave) / 2));
+    const out: Partial<Record<EnemyKind, number>> = {};
+    for (let i = 0; i < k; i++) {
+      const kind: EnemyKind = (i + n) % 2 === 0 ? 'consort' : 'matron';
+      out[kind] = (out[kind] ?? 0) + 1;
+    }
+    return out;
+  }
+
+  /**
    * The organ stage: an organ grows where its whole footprint is open ground
    * (soil or a deposit), at least one cell TOUCHING the meteor or an organ,
    * and only between waves. Theme organs are one of each.
@@ -1501,6 +1563,8 @@ export class Sim {
     if (!def) return false;
     if (def.kind === 'theme' && this.organs.some((o) => o.organ === organ)) return false;
     if (this.cfg.organPool && !this.cfg.organPool.includes(organ) && !(this.cfg.startOrgans ?? []).includes(organ)) return false;
+    if (!this.organOnShelf(organ)) return false;
+    if (def.kind !== 'root' && this.organsLeftThisStage <= 0) return false;
     const cells = this.organFootprint(organ, cell, rot);
     if (!cells) return false;
     for (const c of cells) {
@@ -2282,11 +2346,14 @@ export class Sim {
         const price = this.organCost(cmd.organ);
         const rot = cmd.rot ?? 0;
         if (this.phase === 'siege') return { ok: false, err: 'organs grow between waves' };
+        if (!this.organOnShelf(cmd.organ)) return { ok: false, err: `not on the shelf yet: it opens after wave ${SHELF_AFTER[cmd.organ]}` };
+        if (ORGAN_BY_ID[cmd.organ]?.kind !== 'root' && this.organsLeftThisStage <= 0) return { ok: false, err: `the body knits ${B.organsPerStage} new organs between waves: level one, or wait for the next clear` };
         if (!this.canBuildOrgan(cmd.organ, cmd.cell, rot)) return { ok: false, err: 'must fit on open ground touching the body' };
         if (!this.canAffordOrgan(price)) return { ok: false, err: 'cannot afford' };
         this.payOrgan(price);
         const cells = this.organFootprint(cmd.organ, cmd.cell, rot)!;
         this.organs.push({ id: this.nextId++, organ: cmd.organ, cell: cmd.cell, rot, level: 1, cells });
+        if (ORGAN_BY_ID[cmd.organ].kind !== 'root') this.organsThisStage += 1;
         this.organCache = null;
         this.coreStrainCache = null;
         // Grown over deposits: each pays out now.
@@ -3123,6 +3190,7 @@ export class Sim {
     }
     // No war body answers anything while the Host is late.
     if (court) return out;
+    for (const [kind, n] of Object.entries(this.courtDetachment(this.waveNumber + 1))) out[kind as EnemyKind] = (out[kind as EnemyKind] ?? 0) + (n ?? 0);
     const born = Math.floor(this.mateBacklog);
     if (born > 0) out.militia = (out.militia ?? 0) + born;
     const flamers = this.flamerAnswer();
@@ -3157,6 +3225,8 @@ export class Sim {
     this.waveNumber += 1;
     this.waveBanked = { war: 0, science: 0, royal: 0 };
     this.rumenFed = 0;
+    this.organsThisStage = 0;
+    this.waveSciChyme = 0;
     for (const sh of this.shelters) sh.harmThisWave = 0;
     // The limbs' economy: war and science you did not spend between waves are lost
     // when the next wave starts. The starting meat carries into wave 1; royal
@@ -3167,7 +3237,17 @@ export class Sim {
       const keep = 1 - Math.pow(1 - ROYAL.larderKeep, this.decrees.larder ?? 0);
       const war = Math.floor(this.meat.war * (1 - keep));
       const science = Math.floor(this.meat.science * (1 - keep));
-      if (war > 0 || science > 0) this.events.push({ kind: 'meat-cleared', war, science });
+      // SCIENCE LEFT UNSPENT IS RENDERED INTO CHYME (Nov 23 2026): late in a run the evolutions are bought and most of the
+      // researchers' meat used to spoil here (60-86% of it in waves 9-11). Now the body renders it, scienceChymeRate
+      // science to 1 chyme: a researcher eaten late still feeds the organs. War still spoils (it is the generic currency).
+      const sciChyme = this.meatOrgans ? 0 : Math.floor(science / B.scienceChymeRate);
+      if (sciChyme > 0) {
+        this.chyme += sciChyme;
+        this.chymeEarned += sciChyme;
+        this.waveSciChyme = sciChyme;
+        this.stats.scienceRendered = (this.stats.scienceRendered ?? 0) + sciChyme;
+      }
+      if (war > 0 || science > 0) this.events.push({ kind: 'meat-cleared', war, science: sciChyme > 0 ? science - sciChyme * B.scienceChymeRate : science, ...(sciChyme > 0 ? { chyme: sciChyme, scienceIn: sciChyme * B.scienceChymeRate } : {}) });
       this.meat.war = keep > 0 ? this.meat.war - war : 0;
       this.meat.science = keep > 0 ? this.meat.science - science : 0;
     }
@@ -3193,6 +3273,14 @@ export class Sim {
       waveRisk += scaled * spec.risk;
       for (let i = 0; i < scaled; i++) this.spawnQueue.push(kind as EnemyKind);
     }
+    // THE COURT OPENS (an unfolding skirmish, from courtFromWave): its detachment marches with the wave.
+    const det = this.courtDetachment(this.waveNumber);
+    for (const [kind, n] of Object.entries(det)) {
+      for (let i = 0; i < (n ?? 0); i++) this.spawnQueue.push(kind as EnemyKind);
+      counts[kind as EnemyKind] = (counts[kind as EnemyKind] ?? 0) + (n ?? 0);
+      waveRisk += (n ?? 0) * enemySpec(kind as EnemyKind).risk;
+    }
+    if (Object.keys(det).length && !this.courtOpenedTold) { this.courtOpenedTold = true; this.events.push({ kind: 'court-opened', wave: this.waveNumber }); }
     // Mating musk: every pair that paired off last wave is one more body now (war bodies: not while the Host is late).
     const born = court ? 0 : Math.floor(this.mateBacklog);
     this.mateBacklog -= born;
@@ -3215,7 +3303,7 @@ export class Sim {
     this.spawnTimer = 0;
     const sides = [...new Set(this.incomingGates.map((g) => this.gateSide(g)))].join('+');
     const late = this.cfg.lateHost;
-    this.events.push({ kind: 'wave-start', tier: this.tier, wave: this.waveNumber, counts, sides, risk: waveRisk, ...(court ? { court: true, hostIn: late!.turns - this.waveNumber } : {}) });
+    this.events.push({ kind: 'wave-start', tier: this.tierFor(this.waveNumber), wave: this.waveNumber, counts, sides, risk: waveRisk, ...(court ? { court: true, hostIn: late!.turns - this.waveNumber } : {}) });
     if (late && this.waveNumber === late.turns + 1) this.events.push({ kind: 'host-arrived' });
   }
 
@@ -3277,13 +3365,21 @@ export class Sim {
           this.chymeEarned += ration;
           const digested = Math.floor(this.waveChyme);
           const rumen = Math.floor(this.waveRumen);
-          const earned = digested + rumen + ration;
-          this.lastChymeTally = { wave: this.waveNumber, digested, ration, earned, rumen };
-          this.events.push({ kind: 'chyme-tally', wave: this.waveNumber, digested, ration, earned, bank: Math.floor(this.chyme), ...(this.rumen() ? { rumen } : {}) });
+          const science = this.waveSciChyme;
+          const earned = digested + rumen + ration + science;
+          this.lastChymeTally = { wave: this.waveNumber, digested, ration, earned, rumen, ...(science ? { science } : {}) };
+          this.events.push({ kind: 'chyme-tally', wave: this.waveNumber, digested, ration, earned, bank: Math.floor(this.chyme), ...(this.rumen() ? { rumen } : {}), ...(science ? { science } : {}) });
           this.stats.chymeEarned = Math.floor(this.chymeEarned);
           this.stats.rumenEarned = Math.floor(this.rumenEarned);
           this.waveChyme = 0;
           this.waveRumen = 0;
+          this.waveSciChyme = 0;
+        }
+        // THE SHELF UNFOLDS: a block of organs comes onto it at this clear (told, so the organ stage opens on it).
+        if (this.unfolds && this.cfg.organStage) {
+          for (const b of ORGAN_SHELF) {
+            if (b.after > 0 && b.after === this.wavesCleared) this.events.push({ kind: 'shelf-opened', wave: this.wavesCleared, title: b.title, line: b.line, organs: [...b.organs] });
+          }
         }
         // The setup is the body's alone: whoever is still walking the streets goes home (an engineer at its
         // station stays with it; the station and its turrets stand).
@@ -3362,7 +3458,7 @@ export class Sim {
           const lead = this.enemies[this.enemies.length - 1];
           if (lead) this.spawnMinion('lensbearer', lead.pos, this.baseRng);
         }
-        this.events.push({ kind: 'researchers-arrive', count: n });
+        this.events.push({ kind: 'researchers-arrive', count: n, ...(this.sciencePartiesSeen++ === 0 ? { first: true } : {}) });
       }
     }
 

@@ -10,7 +10,7 @@ import { Sim } from '../src/sim/sim';
 import { placementAnchor } from '../src/ui/organPlace';
 import type { SimConfig } from '../src/sim/types';
 
-const CFG: SimConfig = { gridW: 50, gridH: 40, cellPx: 26, seed: 1234, organStage: true };
+const CFG: SimConfig = { gridW: 50, gridH: 40, cellPx: 26, seed: 1234, organStage: true, unfold: false }; // organ mechanics: the whole shelf (a skirmish unfolds it, DESIGN.md "The world unfolds")
 
 /** A board of open soil round the meteor, a Tendril Root A under the meteor's middle and a root B under A. */
 function board() {

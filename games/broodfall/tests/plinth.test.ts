@@ -9,11 +9,12 @@ import { ORGAN_BY_ID, PLINTH_MAX_HEIGHT, PLINTH_TURNS } from '../content/undergr
 import { BALANCE as B } from '../content/data';
 import type { OrganId, SimConfig, TowerFamily } from '../src/sim/types';
 
-const CFG: SimConfig = { gridW: 50, gridH: 40, cellPx: 26, seed: 1234, organStage: true };
+const CFG: SimConfig = { gridW: 50, gridH: 40, cellPx: 26, seed: 1234, organStage: true, unfold: false }; // organ mechanics: the whole shelf (a skirmish unfolds it, DESIGN.md "The world unfolds")
 
 function grown(seed = 1234): Sim {
   const s = new Sim({ ...CFG, seed });
-  for (let i = 0; i < 600; i++) s.tick();
+  // The waves are cleared as they come: since Nov 23 2026 a body that builds nothing loses its core in wave 1-2.
+  for (let i = 0; i < 600; i++) { s.tick(); s.enemies.length = 0; }
   s.meat.war = 9999;
   s.chyme = 9999;
   s.meat.science = 9999;

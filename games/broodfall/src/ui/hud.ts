@@ -120,7 +120,7 @@ const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: stri
     ? { text: `mitosis: a ${e.family} buds`, cls: 'sci' }
     : { text: '', cls: '' },
   'meat-cleared': (e) => e.kind === 'meat-cleared'
-    ? { text: `unspent meat spoiled: ${e.war} war${e.science > 0 ? `, ${e.science} science` : ''}`, cls: 'hot' }
+    ? { text: `unspent meat spoiled: ${e.war} war${e.science > 0 ? `, ${e.science} science` : ''}${e.chyme ? ` · ${e.scienceIn} unspent science rendered into +${e.chyme} ◆ chyme` : ''}`, cls: 'hot' }
     : { text: '', cls: '' },
   'node-grown': (e) => e.kind === 'node-grown'
     ? { text: `spore bladder: +${e.count} creep node${e.count > 1 ? 's' : ''}`, cls: 'sci' }
@@ -131,8 +131,10 @@ const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: stri
   'mule-lost': () => ({ text: 'SPORE MULE LOST before it rooted — escort the next one', cls: 'hot' }),
   'mother-off-creep': () => ({ text: 'the creep under a Broodmother is gone: she stops brooding and fights', cls: 'hot' }),
   'chyme-tally': (e) => e.kind === 'chyme-tally'
-    ? { text: `◆ chyme rendered: +${e.earned} (${e.digested} digested${e.rumen ? `, ${e.rumen} from the Rumen` : ''}, ${e.ration} for the clear) · ${e.bank} for organs`, cls: 'sci' }
+    ? { text: `◆ chyme rendered: +${e.earned} (${e.digested} digested${e.rumen ? `, ${e.rumen} from the Rumen` : ''}${e.science ? `, ${e.science} from leftover science` : ''}, ${e.ration} for the clear) · ${e.bank} for organs`, cls: 'sci' }
     : { text: '', cls: '' },
+  'shelf-opened': (e) => e.kind === 'shelf-opened' ? { text: `new organs on the shelf: ${e.title.toLowerCase()} (${e.line})`, cls: 'sci' } : { text: '', cls: '' },
+  'court-opened': () => ({ text: 'the court takes the field: royal meat for the decrees', cls: 'royal' }),
   'organ-upgraded': (e) => e.kind === 'organ-upgraded'
     ? { text: `organ levelled: ${e.organ} → LV${e.level}`, cls: 'sci' }
     : { text: '', cls: '' },
@@ -643,7 +645,8 @@ export class Hud {
     this.el.interest.textContent = String(Math.floor(sim.interest));
     // A closed caste (Sim.scienceOpen / royalOpen, Oct 30 2026): its dial, its meat and its button say nothing this deployment.
     document.body.classList.toggle('science-closed', !sim.scienceOpen && sim.meat.science <= 0);
-    document.body.classList.toggle('royal-closed', !sim.royalOpen && sim.meat.royal <= 0);
+    // An unfolding skirmish shows the court's meat and decrees once the court has come (Sim.courtShown, Nov 23 2026).
+    document.body.classList.toggle('royal-closed', !sim.courtShown && sim.meat.royal <= 0);
 
     const coreFrac = Math.max(0, sim.coreHp / sim.coreMaxHp);
     this.el.coreFill.style.width = `${(coreFrac * 100).toFixed(1)}%`;

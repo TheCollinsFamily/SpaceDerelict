@@ -71,6 +71,7 @@ function run(seed: number, who: string) {
   const dmg: number[] = [];
   const coreAfter: number[] = [];
   const tiers: number[] = [];
+  const threats: number[] = [];
   let last = sim.coreHp;
   let t = 0;
   while (sim.outcome === 'playing' && t < 40000) {
@@ -82,10 +83,10 @@ function run(seed: number, who: string) {
     last = sim.coreHp;
     for (const e of sim.takeEvents()) {
       if (e.kind === 'wave-cleared') coreAfter[e.wave - 1] = Math.max(0, sim.coreHp) / sim.coreMaxHp;
-      if (e.kind === 'wave-start') tiers[e.wave - 1] = e.tier;
+      if (e.kind === 'wave-start') { tiers[e.wave - 1] = e.tier; threats[e.wave - 1] = Math.round(sim.threat); }
     }
   }
-  return { tiers, outcome: sim.outcome, wave: sim.waveNumber, cleared: sim.wavesCleared, dmg, coreAfter, core: Math.max(0, sim.coreHp) / sim.coreMaxHp };
+  return { tiers, threats, outcome: sim.outcome, wave: sim.waveNumber, cleared: sim.wavesCleared, dmg, coreAfter, core: Math.max(0, sim.coreHp) / sim.coreMaxHp };
 }
 
 it('difficulty of the first waves', () => {
@@ -100,7 +101,7 @@ it('difficulty of the first waves', () => {
       if (r.outcome === 'won') wins++;
       if (r.outcome === 'lost' && r.wave <= 2) lostBy2++;
       for (let i = 0; i < 5; i++) dmgSum[i] += r.dmg[i] ?? 0;
-      rows.push(`  seed ${String(seed).padStart(2)}: ${r.outcome} in wave ${r.wave} · core after w1 ${pct(r.coreAfter[0])}% w2 ${pct(r.coreAfter[1])}% · dmg w1-5 ${[0, 1, 2, 3, 4].map((i) => Math.round(r.dmg[i] ?? 0)).join('/')} · tiers ${r.tiers.join('')}`);
+      rows.push(`  seed ${String(seed).padStart(2)}: ${r.outcome} in wave ${r.wave} · core after w1 ${pct(r.coreAfter[0])}% w2 ${pct(r.coreAfter[1])}% · dmg w1-5 ${[0, 1, 2, 3, 4].map((i) => Math.round(r.dmg[i] ?? 0)).join('/')} · tiers ${r.tiers.join('')} · threat ${r.threats.join(',')}`);
     }
     out.push(`${who.padEnd(6)} wins ${wins}/${SEEDS} · lost in wave 1-2: ${lostBy2}/${SEEDS} · mean core dmg waves 1-5: ${dmgSum.map((d) => Math.round(d / SEEDS)).join(' / ')}`);
     out.push(...rows);

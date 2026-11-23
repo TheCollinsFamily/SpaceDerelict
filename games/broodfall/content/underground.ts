@@ -195,6 +195,29 @@ export const LEGACY_ORGAN_COST: Record<OrganId, { war?: number; science?: number
   rumen: { war: 60 },
 };
 
+/**
+ * THE SHELF UNFOLDS (Nov 23 2026). Collins: "remember you want an UNFOLDING game world, not dropping everything (science,
+ * royals etc.) at once". A skirmish used to open its organ stage on all 28 organs at once, and the scripted player owned
+ * every one it wanted by wave 9. Now a skirmish's shelf opens a block at a time, each announced when it opens: a block
+ * is on the shelf from the organ stage after wave `after` (0 = the first). The campaign keeps its own pool (the Gene Bay,
+ * SimConfig.organPool) and does not unfold. DESIGN.md "The organ stage unfolds".
+ */
+export interface ShelfBlock { after: number; title: string; line: string; organs: readonly OrganId[] }
+export const ORGAN_SHELF: readonly ShelfBlock[] = [
+  { after: 0, title: 'THE FIRST ORGANS', line: 'four themes, the heart and the root',
+    organs: ['gut', 'forge', 'lattice', 'venom', 'heart', 'root'] },
+  { after: 2, title: 'THE CREEP ORGANS', line: 'spore bladders make free creep nodes; two more themes',
+    organs: ['bladder', 'cyst', 'pacemaker', 'mire', 'nerve', 'womb'] },
+  { after: 3, title: 'ZONES AND THE RUMEN', line: 'the brain and the glands bend the draw; the Rumen makes chyme; free plinths and seedlings',
+    organs: ['brain', 'gland', 'atrophy', 'rumen', 'scaffold', 'seeder'] },
+  { after: 4, title: 'THE ENGINE THEMES', line: 'the Marrow Vault and the Resonance Chamber; thrown, burning and racing creep',
+    organs: ['marrow', 'resonance', 'catapult', 'runner', 'acid', 'swell', 'budder'] },
+  { after: 5, title: 'UNITS YOU COMMAND', line: 'Infestors take shelters, Harriers hunt the science caste, mules carry creep',
+    organs: ['infestor', 'harrier', 'mule'] },
+];
+/** The wave after which an organ comes onto an unfolding shelf (0 = from the first organ stage). */
+export const SHELF_AFTER = Object.fromEntries(ORGAN_SHELF.flatMap((b) => b.organs.map((id) => [id, b.after]))) as Record<OrganId, number>;
+
 export const ORGAN_BY_ID = Object.fromEntries(ORGAN_DEFS.map((d) => [d.id, d])) as Record<OrganId, OrganDef>;
 
 /**

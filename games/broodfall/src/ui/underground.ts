@@ -13,8 +13,9 @@ import { organSpec, type Sim } from '../sim/sim';
 import { neighbours4 } from '../sim/underground';
 import {
   DEPOSITS, FEATURES, FEATURE_FAVORED_LEVEL, FEATURE_LEVEL, METEOR_THEME, ORGAN_BY_ID, ORGAN_DEFS,
-  ORGAN_LEVEL_POTENCY, ORGAN_LEVEL_TEMPO,
+  ORGAN_LEVEL_POTENCY, ORGAN_LEVEL_TEMPO, ORGAN_SHELF, SHELF_AFTER,
 } from '../../content/underground';
+import { BALANCE } from '../../content/data';
 import { placementAnchor } from './organPlace';
 import { TOWERS } from '../../content/data';
 import { strainIcons, strainLabel } from './strain';
@@ -450,7 +451,7 @@ export class UndergroundScreen {
     const u = sim.under;
     const key = [
       this.selected, this.rot, Math.floor(sim.meat.war), Math.floor(sim.meat.science), Math.floor(sim.chyme), sim.lastChymeTally?.wave ?? 0, sim.coreLevel, coreStageOf(sim.stats.limbsGrown, sim.cfg.coreStage),
-      sim.organs.map((o) => `${o.cell}${o.organ}${o.rot}${o.level}`).join(','),
+      sim.organs.map((o) => `${o.cell}${o.organ}${o.rot}${o.level}`).join(','), sim.wavesCleared, sim.organsThisStage,
     ].join('|');
     if (key === this.lastKey) return;
     this.lastKey = key;
@@ -464,9 +465,19 @@ export class UndergroundScreen {
       } else {
         const t = sim.lastChymeTally;
         const tally = t && t.wave === sim.waveNumber
-          ? `<div class="um-tally" title="Chyme is rendered from what the body EARNED: every body the creep digested (war 1, science 2, the court 4), plus the ration for clearing the wave. Meat left unspent renders nothing. It is kept from wave to wave.">WAVE ${t.wave} EARNED <b>+${t.earned}</b><span>${t.digested} from the bodies it digested${t.rumen ? ` · ${t.rumen} from the Rumen` : ''} · ${t.ration} for the clear</span></div>`
+          ? `<div class="um-tally" title="Chyme is rendered from what the body EARNED: every body the creep digested (war 1, science 2, the court 4), plus the ration for clearing the wave. Meat left unspent renders nothing. It is kept from wave to wave.">WAVE ${t.wave} EARNED <b>+${t.earned}</b><span>${t.digested} from the bodies it digested${t.rumen ? ` · ${t.rumen} from the Rumen` : ''}${t.science ? ` · ${t.science} from leftover science` : ''} · ${t.ration} for the clear</span></div>`
           : `<div class="um-tally"><span>Chyme comes from what the body earns: every body the creep digests, and every wave it clears.</span></div>`;
-        this.meatBox.innerHTML = tally
+        // THE SHELF UNFOLDS (Nov 23 2026): what came onto it at this clear, and how many new organs the body may still knit.
+        let news = '';
+        if (sim.unfolds) {
+          const fresh = ORGAN_SHELF.find((b) => b.after > 0 && b.after === sim.wavesCleared);
+          const left = sim.organsLeftThisStage;
+          const next = ORGAN_SHELF.find((b) => b.after > sim.wavesCleared);
+          news = `<div class="um-news${fresh ? ' fresh' : ''}" title="A skirmish's shelf opens a block of organs at a time, and the body knits at most ${BALANCE.organsPerStage} new organs between waves (roots and levels are free of it).">`
+            + (fresh ? `<b>NEW ON THE SHELF: ${fresh.title}</b><span>${fresh.line}</span>` : next ? `<span>NEXT ON THE SHELF after wave ${next.after}: ${next.title.toLowerCase()}</span>` : '')
+            + `<span class="knit">KNIT ${BALANCE.organsPerStage - left} / ${BALANCE.organsPerStage} NEW ORGANS THIS STAGE</span></div>`;
+        }
+        this.meatBox.innerHTML = tally + news
           + `<div class="meat um-chyme" title="CHYME: what the body renders from what it digests. Organs are bought with it, and it is KEPT from wave to wave."><span class="meat-label">◆ CHYME</span><span class="meat-val">${Math.floor(sim.chyme)}</span></div>`;
       }
     }
@@ -496,13 +507,18 @@ export class UndergroundScreen {
       }
       const price = sim.organCost(id);
       const afford = sim.canAffordOrgan(price);
-      const locked = !!sim.cfg.organPool && !sim.cfg.organPool.includes(id) && !(sim.cfg.startOrgans ?? []).includes(id);
+      const pooled = !!sim.cfg.organPool && !sim.cfg.organPool.includes(id) && !(sim.cfg.startOrgans ?? []).includes(id);
+      // An unfolding skirmish (Nov 23 2026): an organ not on the shelf yet says when it comes; one that came at this clear is NEW.
+      const opens = sim.organOpensAfter(id);
+      const locked = pooled || opens !== null;
+      const fresh = sim.unfolds && !locked && SHELF_AFTER[id] > 0 && SHELF_AFTER[id] === sim.wavesCleared;
+      const full = d.kind !== 'root' && sim.organsLeftThisStage <= 0;
       const what = d.kind === 'theme' && d.unlocks ? d.unlocks.map(famName).join(', ') : d.blurb;
-      return `<button class="under-organ${this.selected === id ? ' on' : ''}${afford ? '' : ' poor'}${locked ? ' locked' : ''}${mine.length ? ' has' : ''}" data-organ="${id}" style="--acc:${glow}" title="${d.blurb}">
+      return `<button class="under-organ${this.selected === id ? ' on' : ''}${afford && !full ? '' : ' poor'}${locked ? ' locked' : ''}${fresh ? ' fresh' : ''}${mine.length ? ' has' : ''}" data-organ="${id}" style="--acc:${glow}" title="${d.blurb}">
         <b><span class="og" style="color:${COLOR[id]}">${GLYPH[id]}</span> ${d.name}</b>
         ${mine.length ? `<em class="own count">×${mine.length}</em>` : this.shapeSvg(id)}${this.scan?.tiles[id] ? `<img class="pal-tile" alt="" src="${this.scan.tiles[id]}" style="--acc:${glow}">` : ''}
         <span>${what}</span>
-        <i>${locked ? (this.plain ? 'LOCKED' : 'LOCKED — get it in the Gene Bay on the ship') : this.priceText(price)}${d.signature ? ` · shares ${VERB[d.signature] ?? d.signature}` : ''}</i>
+        ${fresh ? '<em class="new">NEW</em>' : ''}<i>${opens !== null && !pooled ? `OPENS AFTER WAVE ${opens}` : locked ? (this.plain ? 'LOCKED' : 'LOCKED — get it in the Gene Bay on the ship') : full ? `${this.priceText(price)} · KNIT ${BALANCE.organsPerStage}/${BALANCE.organsPerStage} THIS STAGE` : this.priceText(price)}${d.signature ? ` · shares ${VERB[d.signature] ?? d.signature}` : ''}</i>
       </button>`;
     }).join('')}</div>`;
     const core = levelCard('core', METEOR_THEME.name, '☄', '#ff6a50', '#ff6a50', this.scan?.meteor ?? undefined, sim.coreLevel, sim.organUpgradeCost(null), METEOR_THEME.unlocks, VERB[METEOR_THEME.signature]);
@@ -885,7 +901,10 @@ export class UndergroundScreen {
     };
     const parts = [`${d.name.toUpperCase()} (${this.priceText(sim.organCost(id))})`, kind[d.kind] ?? '', d.blurb];
     if (mine.length) parts.push(`you have ${mine.length}`);
-    parts.push(locked ? (this.plain ? 'LOCKED' : 'LOCKED — get it in the Gene Bay on the ship') : 'click to pick it, then click the board');
+    const opens = sim.organOpensAfter(id);
+    if (opens !== null) parts.push(`not on the shelf yet: it opens after wave ${opens}`);
+    else if (d.kind !== 'root' && sim.organsLeftThisStage <= 0) parts.push(`the body has knit its ${BALANCE.organsPerStage} new organs this stage: level a theme, grow a root, or wait for the next clear`);
+    else parts.push(locked ? (this.plain ? 'LOCKED' : 'LOCKED — get it in the Gene Bay on the ship') : 'click to pick it, then click the board');
     return parts.filter(Boolean).join(' — ');
   }
 

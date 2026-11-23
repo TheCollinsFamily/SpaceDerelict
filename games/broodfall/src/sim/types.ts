@@ -840,7 +840,9 @@ export type SimEvent =
   | { kind: 'limb-hit'; towerId: number; family: TowerFamily; amount: number; at: Vec; from: Vec; by: HitBy; enemy?: EnemyKind; shielded: boolean }
   | { kind: 'organ-built'; organ: OrganId }
   | { kind: 'organ-upgraded'; organ: OrganId; level: number }
-  | { kind: 'meat-cleared'; war: number; science: number }
+  | { kind: 'meat-cleared'; war: number; science: number; /** Science rendered into chyme instead of spoiling (Nov 23 2026). */ chyme?: number; scienceIn?: number }
+  | { kind: 'shelf-opened'; wave: number; title: string; line: string; organs: OrganId[] }
+  | { kind: 'court-opened'; wave: number }
   | { kind: 'node-grown'; count: number }
   | { kind: 'plinth-grown'; count: number }
   | { kind: 'seedling-grown'; count: number }
@@ -901,7 +903,7 @@ export type SimEvent =
   | { kind: 'reborn'; family: TowerFamily }
   | { kind: 'deposit-claimed'; name: string }
   | { kind: 'royal-incoming' }
-  | { kind: 'researchers-arrive'; count: number }
+  | { kind: 'researchers-arrive'; count: number; /** The run's first study party (told with a banner). */ first?: boolean }
   /** Science forward bases: an engineer is out (where it is headed), a station raised, grown, raised a turret, sent a party or a squad, destroyed. */
   | { kind: 'engineer-out'; enemyId: number; cell: number }
   | { kind: 'dome-up'; enemyId: number; bearer: EnemyKind }
@@ -918,7 +920,7 @@ export type SimEvent =
   | { kind: 'discarded'; family: TowerFamily }
   | { kind: 'wave-cleared'; wave: number; bonus: number }
   /** The clear's tally of CHYME (DESIGN.md "Chyme"): rendered from this wave's digesting, the clear's ration, and the bank now. */
-  | { kind: 'chyme-tally'; wave: number; digested: number; ration: number; earned: number; bank: number; /** The Rumen's share: what it fed on and fermented. */ rumen?: number }
+  | { kind: 'chyme-tally'; wave: number; digested: number; ration: number; earned: number; bank: number; /** The Rumen's share: what it fed on and fermented. */ rumen?: number; /** Rendered from the science left unspent when this wave started. */ science?: number }
   | { kind: 'draft-open' }
   | { kind: 'plate-drafted'; name: string; feature: string }
   | { kind: 'royal-decree'; decree: DecreeId; name: string; family?: TowerFamily }
@@ -1008,6 +1010,13 @@ export interface SimConfig {
    * full war wage), kept only so a run saved before then (src/meta/runSave.ts v1) replays exactly as it was played.
    */
   organEconomy?: 'chyme' | 'meat';
+  /**
+   * The skirmish world unfolds (Nov 23 2026, DESIGN.md "The world unfolds"): the organ shelf opens a block at a time, the
+   * body knits at most BALANCE.organsPerStage organs between waves, and the court sends a detachment from
+   * BALANCE.courtFromWave. Unset: on in a skirmish (no organ pool, no defence, no last mission), off in the campaign.
+   * false: off (a run saved before it, src/meta/runSave.ts v2).
+   */
+  unfold?: boolean;
   /** Starting entrances (1-3). More is a difficulty wager paid in richer meat. */
   entrances?: number;
   // ---- the campaign (src/meta) sets these; skirmish leaves them unset ----
@@ -1129,6 +1138,8 @@ export interface RunStats {
   chymeEarned?: number;
   /** What the Rumen made over the run (DESIGN.md "THE RUMEN"). */
   rumenEarned?: number;
+  /** Chyme rendered from science left unspent at a wave's start (Nov 23 2026). */
+  scienceRendered?: number;
   shelterTopStage?: number;
   harriersBorn?: number;
   harriersLost?: number;

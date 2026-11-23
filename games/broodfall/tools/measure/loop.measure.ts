@@ -17,6 +17,8 @@ interface Row {
   builds: number; butchers: number; evolves: number; discards: number; organs: number; organUps: number; decrees: number;
   chymeIn: number; chymeBank: number; coreHits: number; coreDmg: number; limbsLost: number; stolen: number;
   limbs: number; handStuckFrac: number; handAllPaidFrac: number;
+  /** Organs owned when the wave started; chyme rendered from leftover science at its start (Nov 23 2026). */
+  owned: number; sciChyme: number;
 }
 
 const SEEDS = Number(process.env.LOOP_SEEDS || 6);
@@ -35,6 +37,7 @@ function run(seed: number) {
     wave, siegeS: 0, setupS: 0, earned: { war: 0, science: 0, royal: 0 }, spoiled: { war: 0, science: 0 },
     bankAtStart: { ...sim.meat }, builds: 0, butchers: 0, evolves: 0, discards: 0, organs: 0, organUps: 0, decrees: 0,
     chymeIn: 0, chymeBank: 0, coreHits: 0, coreDmg: 0, limbsLost: 0, stolen: 0, limbs: 0, handStuckFrac: 0, handAllPaidFrac: 0,
+    owned: sim.organs.length, sciChyme: 0,
   });
   while (sim.outcome === 'playing' && ticks < 30000) {
     bot.act(sim, DT);
@@ -61,7 +64,7 @@ function run(seed: number) {
         cur = newRow(sim.waveNumber);
       }
       if (!cur) continue;
-      if (e.kind === 'meat-cleared') { cur.spoiled.war += e.war; cur.spoiled.science += e.science; }
+      if (e.kind === 'meat-cleared') { cur.spoiled.war += e.war; cur.spoiled.science += e.science; cur.sciChyme += e.chyme ?? 0; }
       if (e.kind === 'banked') cur.earned[e.caste] += e.amount;
       if (e.kind === 'built') cur.builds++;
       if (e.kind === 'butchered') cur.butchers++;
@@ -89,10 +92,10 @@ it('the loop, wave by wave', () => {
   }
   const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
   const f = (n: number, d = 0) => n.toFixed(d).padStart(5);
-  out.push('\nwave | n | siege s | setup s | earned war/sci/roy | bank@start war/sci | spoiled war/sci | builds eat evo disc | organs ups | chyme in/bank | core dmg hits | lost stolen | limbs | hand none% all%');
+  out.push('\nwave | n | siege s | setup s | earned war/sci/roy | bank@start war/sci | spoiled war/sci | builds eat evo disc | organs ups | chyme in/bank | core dmg hits | lost stolen | limbs | hand none% all% | owned sci→◆');
   for (const [w, rs] of [...agg.entries()].sort((a, b) => a[0] - b[0])) {
     const m = (k: (r: Row) => number) => avg(rs.map(k));
-    out.push(`${String(w).padStart(4)} | ${rs.length} | ${f(m((r) => r.siegeS))} | ${f(m((r) => r.setupS))} | ${f(m((r) => r.earned.war))} ${f(m((r) => r.earned.science))} ${f(m((r) => r.earned.royal))} | ${f(m((r) => r.bankAtStart.war))} ${f(m((r) => r.bankAtStart.science))} | ${f(m((r) => r.spoiled.war))} ${f(m((r) => r.spoiled.science))} | ${f(m((r) => r.builds), 1)} ${f(m((r) => r.butchers), 1)} ${f(m((r) => r.evolves), 1)} ${f(m((r) => r.discards), 1)} | ${f(m((r) => r.organs), 1)} ${f(m((r) => r.organUps), 1)} | ${f(m((r) => r.chymeIn))} ${f(m((r) => r.chymeBank))} | ${f(m((r) => r.coreDmg))} ${f(m((r) => r.coreHits))} | ${f(m((r) => r.limbsLost), 1)} ${f(m((r) => r.stolen), 1)} | ${f(m((r) => r.limbs))} | ${f(m((r) => r.handStuckFrac * 100))} ${f(m((r) => r.handAllPaidFrac * 100))}`);
+    out.push(`${String(w).padStart(4)} | ${rs.length} | ${f(m((r) => r.siegeS))} | ${f(m((r) => r.setupS))} | ${f(m((r) => r.earned.war))} ${f(m((r) => r.earned.science))} ${f(m((r) => r.earned.royal))} | ${f(m((r) => r.bankAtStart.war))} ${f(m((r) => r.bankAtStart.science))} | ${f(m((r) => r.spoiled.war))} ${f(m((r) => r.spoiled.science))} | ${f(m((r) => r.builds), 1)} ${f(m((r) => r.butchers), 1)} ${f(m((r) => r.evolves), 1)} ${f(m((r) => r.discards), 1)} | ${f(m((r) => r.organs), 1)} ${f(m((r) => r.organUps), 1)} | ${f(m((r) => r.chymeIn))} ${f(m((r) => r.chymeBank))} | ${f(m((r) => r.coreDmg))} ${f(m((r) => r.coreHits))} | ${f(m((r) => r.limbsLost), 1)} ${f(m((r) => r.stolen), 1)} | ${f(m((r) => r.limbs))} | ${f(m((r) => r.handStuckFrac * 100))} ${f(m((r) => r.handAllPaidFrac * 100))} | ${f(m((r) => r.owned), 1)} ${f(m((r) => r.sciChyme))}`);
   }
   // eslint-disable-next-line no-console
   console.log(`\n${out.join('\n')}`);

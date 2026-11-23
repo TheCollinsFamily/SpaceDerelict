@@ -14,7 +14,7 @@ import { RUMEN_POLICY } from '../src/sim/organPolicy';
 import { RUMEN_FEED_CAP, RUMEN_FERMENT_CAP, RUMEN_PER_BODY } from '../content/underground';
 import type { Enemy, OrganId, SimConfig, Tower, TowerFamily } from '../src/sim/types';
 
-const CFG: SimConfig = { gridW: 50, gridH: 40, cellPx: 26, seed: 5150, organStage: true };
+const CFG: SimConfig = { gridW: 50, gridH: 40, cellPx: 26, seed: 5150, organStage: true, unfold: false }; // organ mechanics: the whole shelf (a skirmish unfolds it, DESIGN.md "The world unfolds")
 type Priv = { spawnEnemy(kind: string): Enemy; killEnemy(id: number, y: number, eaten: boolean, src?: number): void; enemies: Enemy[]; spawnQueue: unknown[] };
 const priv = (s: Sim) => s as unknown as Priv;
 

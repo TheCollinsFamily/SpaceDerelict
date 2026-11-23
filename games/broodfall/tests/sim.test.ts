@@ -138,7 +138,7 @@ describe('economy and building', () => {
   });
 
   it('organ stage: theme organs UNLOCK their limbs into the draw (the meteor gives spitter, lasher, spine)', () => {
-    const s = new Sim({ ...CFG, seed: 4100, organStage: true });
+    const s = new Sim({ ...CFG, seed: 4100, organStage: true, unfold: false });
     const w0 = s.drawWeights();
     expect(w0.spitter).toBeGreaterThan(0);
     expect(w0.impaler).toBe(0);
@@ -283,7 +283,7 @@ describe('economy and building', () => {
   });
 
   it('organ stage: unspent war and science are LOST when a wave starts (after the first); royal points stay', () => {
-    const s = new Sim({ ...CFG, seed: 4105, organStage: true });
+    const s = new Sim({ ...CFG, seed: 4105, organStage: true, unfold: false });
     s.meat.war = 77; s.meat.science = 12; s.meat.royal = 2;
     s.issue({ kind: 'call-early' }); // wave 1: the starting meat carries in
     expect(s.meat.war).toBeGreaterThanOrEqual(77);
@@ -2312,7 +2312,7 @@ describe('CREEP: free creep nodes grown by creep organs (Collins, Sep 28 2026)',
     expect(s.bladderStrain(bl).radius).toBe(4);
     expect(s.bladderStrain(bl).reach).toBe(8);
     // Catapult also unlocks the Spore Sling.
-    const gated = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed: 4304, organStage: true });
+    const gated = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed: 4304, organStage: true, unfold: false });
     expect(gated.drawWeights().sling).toBe(0);
     gated.meat.war = 9999;
     gated.chyme = 9999;
@@ -2381,7 +2381,7 @@ describe('CREEP: free creep nodes grown by creep organs (Collins, Sep 28 2026)',
 
   it('a creep lance lays a STRIP of creep along its facing (not all around); the Runner Gland unlocks it', () => {
     const s = freshSim(4306);
-    const gated = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed: 4306, organStage: true });
+    const gated = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed: 4306, organStage: true, unfold: false });
     expect(gated.drawWeights().lance).toBe(0);
     gated.meat.war = 9999;
     gated.chyme = 9999;
@@ -2408,7 +2408,7 @@ describe('CREEP: free creep nodes grown by creep organs (Collins, Sep 28 2026)',
   });
 
   it('an atrophy gland: themes touching its zone are NEVER drawn (starve the basics out late); never an empty draw', () => {
-    const s = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed: 4310, organStage: true });
+    const s = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed: 4310, organStage: true, unfold: false });
     s.meat.war = 9999;
     s.chyme = 9999;
     growSpot(s, 'forge');

@@ -206,7 +206,7 @@ function saveRun(): void {
   q.set('seed', String(SEED));
   for (const k of ['intro', 'resume']) q.delete(k);
   saveRunSave({
-    v: 2, search: `?${q.toString()}`, kind: CAMPAIGN === 'run' ? 'campaign' : 'skirmish', territory: territory ?? undefined,
+    v: 3, search: `?${q.toString()}`, kind: CAMPAIGN === 'run' ? 'campaign' : 'skirmish', territory: territory ?? undefined,
     cfg: JSON.parse(JSON.stringify(CFG)), cmds: runOrders, ticks: sim.tickCount, speed: speed || 1, wave: sim.waveNumber, savedAt: Date.now(),
   });
 }
@@ -563,9 +563,13 @@ function handleEvents(events: SimEvent[]): void {
     if (e.kind === 'wave-cleared' && sim.meatOrgans) banner(`WAVE ${e.wave} CLEARED · +${e.bonus} WAR MEAT`);
     if (e.kind === 'chyme-tally') {
       const wage = sim.warWage(e.wave);
-      banner(`WAVE ${e.wave} CLEARED${wage > 0 ? ` · +${wage} WAR` : ''} · +${e.earned} ◆ CHYME FOR ORGANS\n${e.digested} FROM THE BODIES THE CREEP DIGESTED${e.rumen ? ` · ${e.rumen} FROM THE RUMEN` : ''} · ${e.ration} FOR THE CLEAR`);
+      banner(`WAVE ${e.wave} CLEARED${wage > 0 ? ` · +${wage} WAR` : ''} · +${e.earned} ◆ CHYME FOR ORGANS\n${e.digested} FROM THE BODIES THE CREEP DIGESTED${e.rumen ? ` · ${e.rumen} FROM THE RUMEN` : ''}${e.science ? ` · ${e.science} FROM LEFTOVER SCIENCE` : ''} · ${e.ration} FOR THE CLEAR`);
     }
     if (e.kind === 'royal-incoming') banner('THE ROYAL TAKES THE FIELD');
+    // THE WORLD UNFOLDS (Nov 23 2026): each new layer of a skirmish is told when it opens. New organs on the shelf are told
+    // in the organ stage itself, which opens over the board's banners (src/ui/underground.ts: its head row and NEW cards).
+    if (e.kind === 'researchers-arrive' && e.first) banner('THE SCIENCE CASTE COMES — RESEARCHERS STEAL LIMBS\nEAT THEM FOR SCIENCE MEAT: IT EVOLVES YOUR LIMBS');
+    if (e.kind === 'court-opened') banner('THE COURT TAKES THE FIELD — A CONSORT MARCHES WITH THE WAVE\nEAT THE COURT FOR ROYAL MEAT: IT BUYS ROYAL DECREES (THE CROWN ON THE BAR)');
     if (e.kind === 'plate-drafted') banner(`DISTRICT CONSUMED: ${e.name.toUpperCase()}`);
     if (e.kind === 'sealed-in' && !AUTO) banner('WALLED IN — BURROW THROUGH A WALL INTO THE SMOKE TO GROW');
     if (e.kind === 'burrowed') banner('BURROWED THROUGH — A NEW WAY IN');
