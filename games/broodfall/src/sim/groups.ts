@@ -125,16 +125,37 @@ export const AUTO_DEFAULT: Record<UnitKind, boolean> = { warrior: true, harrier:
 export interface TunnelLink { bodyCell: number; headCell: number; headOutpostId: number }
 
 /** A sortie: hunt this down (or clear this spot), then come home. */
-interface Sortie { targetId?: number; to: Vec; home?: Vec; quiet: number; leash?: Stance }
-/** A HUNT-stance unit waiting in cover near a science team: where it came from, and where it waits. */
-interface Lurk { home?: Vec; at: Vec }
+interface Sortie { targetId?: number; to: Vec; home?: Vec; quiet: number }
+/**
+ * A STANCE'S SQUAD (Collins, Nov 23 2026: "and it will know to keep them together right? like it would be dumb if they all
+ * drip to whatever is closest"). Every unit on one stance is one squad with ONE target. It forms up before it goes
+ * (gather), goes on it together (the ones out in front wait for the rest unless they are already fighting), and a unit
+ * that comes free while the squad is out (born, healed) waits at home for the next forming-up instead of walking in alone.
+ *   gather — forming up at `at` (the unit nearest the target, or where a HUNT squad waits); it goes when it is together
+ *   go     — on the target together
+ *   wait   — HUNT: waiting together in cover at `at`, nearest the closest science team
+ */
+export interface Squad {
+  members: number[];
+  /** The alert it is on: its kind and its enemy (or the outpost's shelter). */
+  target?: { kind: AlertKind; targetId: number };
+  phase: 'gather' | 'go' | 'wait';
+  at?: Vec;
+  /** Seconds in this phase. */
+  clock: number;
+}
 /** A hurt unit walking back onto the creep to heal: what it was doing, to go back to. */
 interface Retreat { orders: UnitOrder[]; guard?: Vec }
 
 export class Groups {
   readonly sorties = new Map<number, Sortie>();
   readonly retreats = new Map<number, Retreat>();
-  readonly lurks = new Map<number, Lurk>();
+  /** One squad a stance (src/sim/groups.ts Squad). */
+  readonly squads = new Map<Stance, Squad>();
+  /** Where a squad member came from, kept until it is home again (a Pit warrior's is its rally point: undefined). */
+  private readonly homes = new Map<number, Vec | undefined>();
+  private squadClock = 0;
+  private cover: number[] | null = null;
   stance: Record<UnitKind, Stance> = { ...STANCE_DEFAULT };
   alerts: Alert[] = [];
   private alertSeq = 1;
@@ -148,7 +169,26 @@ export class Groups {
   forget(id: number): void {
     this.sorties.delete(id);
     this.retreats.delete(id);
-    this.lurks.delete(id);
+    this.leaveSquad(id);
+    this.homes.delete(id);
+  }
+
+  /** The squad a unit is in, if any. */
+  squadOf(id: number): Squad | undefined {
+    for (const sq of this.squads.values()) if (sq.members.includes(id)) return sq;
+    return undefined;
+  }
+
+  private leaveSquad(id: number): void {
+    for (const sq of this.squads.values()) sq.members = sq.members.filter((m) => m !== id);
+  }
+
+  /** Out of its squad and back to where it came from. */
+  private sendHome(u: Unit): void {
+    this.leaveSquad(u.id);
+    const home = this.homes.has(u.id) ? this.homes.get(u.id) : this.homeOf(u);
+    this.homes.delete(u.id);
+    this.goHome(u, home);
   }
 
   /** Whether a kind does anything by itself (its stance is not OFF): the old AUTO switch, read. */
@@ -165,13 +205,8 @@ export class Groups {
 
   setStance(who: UnitKind, stance: Stance): void {
     this.stance[who] = stance;
-    // A unit waiting or chasing under the old stance goes home; the next pass gives it the new one's work.
-    for (const u of unitsOf(this.s, who)) {
-      const so = this.sorties.get(u.id);
-      if (so?.leash) { this.sorties.delete(u.id); this.goHome(u, so.home); }
-      const lk = this.lurks.get(u.id);
-      if (lk) { this.lurks.delete(u.id); this.goHome(u, lk.home); }
-    }
+    // A unit out with its old stance's squad goes home; the next pass gives it the new one's work.
+    for (const u of unitsOf(this.s, who)) if (this.squadOf(u.id)) this.sendHome(u);
   }
 
   /** Back to its own post (a Pit warrior's is its rally point: home undefined). */
@@ -362,11 +397,14 @@ export class Groups {
         if (s.isCreeped(here)) continue;
         const list = this.ordersOf(u);
         const cur = list[0];
-        // The player's own move or hold is his: a hurt unit he parked stays parked.
-        if (cur && (cur.kind === 'hold' || (cur.kind === 'move' && !this.sorties.has(u.id)))) continue;
+        // The player's own move or hold is his: a hurt unit he parked stays parked (a squad's own are not his).
+        const inSquad = !!this.squadOf(u.id);
+        if (!inSquad && cur && (cur.kind === 'hold' || (cur.kind === 'move' && !this.sorties.has(u.id)))) continue;
         const safe = s.nearestCreepStreet(u.pos);
         if (!safe) continue;
-        this.retreats.set(u.id, { orders: [...list], guard: (u as { guard?: Vec }).guard ? { ...(u as { guard?: Vec }).guard! } : undefined });
+        // Healed, a squad member comes back free (its squad takes it in again at the next forming-up).
+        if (inSquad) this.leaveSquad(u.id);
+        this.retreats.set(u.id, { orders: inSquad ? [] : [...list], guard: (u as { guard?: Vec }).guard ? { ...(u as { guard?: Vec }).guard! } : undefined });
         this.sorties.delete(u.id);
         list.length = 0;
         list.push({ kind: 'move', to: safe });
@@ -376,7 +414,7 @@ export class Groups {
     const leak = s.enemies.find((e) => !e.burrowed && !s.isAirborne(e) && Math.hypot(e.pos.x - s.core.x, e.pos.y - s.core.y) < B.leakRadius);
     if (leak) {
       for (const b of s.broodlings) {
-        if (b.puppet || b.motherUnit !== undefined || (b.orders && b.orders.length) || this.sorties.has(b.id) || this.retreats.has(b.id)) continue;
+        if (b.puppet || b.motherUnit !== undefined || (b.orders && b.orders.length) || this.sorties.has(b.id) || this.retreats.has(b.id) || this.squadOf(b.id)) continue;
         if (Math.hypot(b.pos.x - s.core.x, b.pos.y - s.core.y) > B.leakAnswerDist) continue;
         this.sorties.set(b.id, { targetId: leak.id, to: { ...leak.pos }, home: b.guard ? { ...b.guard } : undefined, quiet: 0 });
         (b.orders ??= []).push({ kind: 'attack', to: s.standableAt(leak.pos) ?? { ...leak.pos } });
@@ -387,6 +425,12 @@ export class Groups {
     if (this.alertClock <= 0) {
       this.alertClock = 1;
       this.raiseAlerts();
+    }
+    // The squads, four times a second.
+    this.squadClock -= dt;
+    if (this.squadClock <= 0) {
+      this.squadClock = 0.25;
+      this.squadsStep(0.25);
     }
   }
 
@@ -426,7 +470,7 @@ export class Groups {
       if (hit) keep('outpost', sh.id, s.cellCenter(sh.door));
     }
     this.alerts = live;
-    this.stancePass();
+    this.cover = null; // read afresh at the next squad step
   }
 
   /** Your cover: every street cell inside your limbs' fire or on your creep. */
@@ -453,90 +497,161 @@ export class Groups {
     return { cell: best, d: bd };
   }
 
-  /**
-   * The stances, once a second: every free unit of a kind with a stance (not on the player's orders, not on a sortie,
-   * not healing) is given its work; a leashed chase whose quarry has left cover is broken off.
-   */
-  private stancePass(): void {
+  /** Where an alert's quarry is now (the enemy itself, or the outpost's door), or null once it is gone. */
+  private quarryAt(t: { kind: AlertKind; targetId: number }): Vec | null {
     const s = this.s;
-    const kinds = STANCE_KINDS.filter((k) => this.stance[k] !== 'off' && unitsOf(s, k).length > 0);
-    if (!kinds.length && !this.lurks.size) return;
-    const cover = this.coverCells();
-    const near = new Map<number, { cell: number; d: number }>();
-    const nearOf = (al: Alert): { cell: number; d: number } => {
-      let n = near.get(al.id);
-      if (!n) { n = this.nearestCover(cover, al.at); near.set(al.id, n); }
-      return n;
-    };
-    // Leashed chases: DEFEND and HUNT let a quarry go once it is out of reach of cover.
-    for (const [id, so] of [...this.sorties]) {
-      if (!so.leash || so.targetId === undefined) continue;
-      const u = s.unitById(id);
-      const q = s.enemies.find((e) => e.id === so.targetId && !e.burrowed);
-      if (!u || !q) continue;
-      const n = this.nearestCover(cover, q.pos);
-      if (n.d <= strikeOf(kindOf(s, u)) + 40) continue;
-      this.sorties.delete(id);
-      if (so.leash === 'hunt' && n.cell >= 0) this.lurkAt(u, s.cellCenter(n.cell), so.home);
-      else this.goHome(u, so.home);
+    if (t.kind === 'outpost') {
+      const al = this.alerts.find((x) => x.kind === 'outpost' && x.targetId === t.targetId);
+      return al ? al.at : null;
     }
-    for (const k of kinds) {
-      const st = this.stance[k];
-      const reach = strikeOf(k);
-      const wanted = this.alerts.filter((al) => STANCE_ANSWERS[st].includes(al.kind) && al.who.includes(k));
-      // In reach: RAID goes anywhere; an outpost under attack is home ground; otherwise it must be in reach of cover.
-      const inReach = wanted.filter((al) => st === 'raid' || al.kind === 'outpost' || nearOf(al).d <= reach);
-      for (const u of unitsOf(s, k)) {
-        if (this.sorties.has(u.id) || this.retreats.has(u.id) || this.inTunnel(u.id)) continue;
-        const lurking = this.lurks.get(u.id);
-        if (!lurking && this.ordersOf(u).length) continue; // the player's own order
-        const closest = (list: Alert[]): Alert | undefined => {
-          let best: Alert | undefined;
-          let bd = Infinity;
-          for (const al of list) { const d = Math.hypot(al.at.x - u.pos.x, al.at.y - u.pos.y); if (d < bd) { bd = d; best = al; } }
-          return best;
-        };
-        const go = closest(inReach);
-        if (go) {
-          const home = lurking ? lurking.home : this.homeOf(u);
-          this.lurks.delete(u.id);
-          const target: GroupTarget = go.kind === 'outpost' ? { kind: 'outpost', shelterId: go.targetId, at: go.at } : { kind: 'enemy', id: go.targetId, at: go.at };
-          this.orderSome([u], target, true);
-          const so = this.sorties.get(u.id);
-          if (so) { so.home = home; if (st !== 'raid' && go.kind !== 'outpost') so.leash = st; }
-          go.answered = true;
-          continue;
+    const e = s.enemies.find((x) => x.id === t.targetId && !x.burrowed);
+    if (e) return e.pos;
+    // A science party keeps its alert when its lead dies: follow the alert.
+    const al = this.alerts.find((x) => x.kind === t.kind && x.targetId === t.targetId);
+    return al && t.kind === 'science' ? al.at : null;
+  }
+
+  /** Give an order unless the unit already has it (so a squad does not re-route every step). */
+  private setOrder(u: Unit, o: UnitOrder): void {
+    const list = this.ordersOf(u);
+    const cur = list[list.length - 1];
+    if (list.some((x) => x.kind === 'move' && x.enter)) return; // on its way into the tunnel
+    if (cur && cur.kind === o.kind && (o.kind === 'hold' || ('to' in cur && 'to' in o && Math.hypot(cur.to.x - o.to.x, cur.to.y - o.to.y) < 8))) return;
+    list.length = 0;
+    if (o.kind !== 'hold' && 'to' in o) this.route(u, kindOf(this.s, u), o.to, list);
+    list.push(o);
+  }
+
+  /** A spot round a point for the i-th of n (the spiral the group orders use), on a street. */
+  private spot(at: Vec, i: number, n: number): Vec {
+    const a = i * 2.399;
+    const r = n > 1 ? 6 + 3 * Math.sqrt(i) : 0;
+    return this.s.standableAt({ x: at.x + Math.cos(a) * r, y: at.y + Math.sin(a) * r }) ?? at;
+  }
+
+  /**
+   * Every squad, four times a second. Who is in it: every unit on its stance not on the player's orders, a sortie, a
+   * retreat or in the tunnel. Its ONE target: kept while it is still in reach, else the alert in reach nearest the squad.
+   */
+  private squadsStep(dt: number): void {
+    const s = this.s;
+    const stances = (['defend', 'hunt', 'raid'] as Stance[]).filter((st) => this.squads.has(st) || STANCE_KINDS.some((k) => this.stance[k] === st && unitsOf(s, k).length));
+    if (!stances.length) return;
+    this.cover ??= this.coverCells();
+    const cover = this.cover;
+    for (const st of stances) {
+      const sq: Squad = this.squads.get(st) ?? { members: [], phase: 'gather', clock: 0 };
+      this.squads.set(st, sq);
+      sq.clock += dt;
+      const free = (id: number): boolean => !this.retreats.has(id) && !this.sorties.has(id) && !this.inTunnel(id);
+      sq.members = sq.members.filter((id) => { const u = s.unitById(id); return !!u && this.stance[kindOf(s, u)] === st && free(id); });
+      const pool: Unit[] = [];
+      for (const k of STANCE_KINDS) {
+        if (this.stance[k] !== st) continue;
+        for (const u of unitsOf(s, k)) if (free(u.id) && !this.ordersOf(u).length && !this.squadOf(u.id)) pool.push(u);
+      }
+      const units = (): Unit[] => sq.members.map((id) => s.unitById(id)).filter((u): u is Unit => !!u);
+      // Who joins: everyone free, except while the squad is out on a target (then they wait at home for the next forming-up).
+      const join = (): void => {
+        for (const u of pool) {
+          if (sq.members.includes(u.id)) continue;
+          sq.members.push(u.id);
+          if (!this.homes.has(u.id)) this.homes.set(u.id, this.homeOf(u));
         }
-        // HUNT with a team about but out of reach: wait in cover at the point nearest it.
-        const team = st === 'hunt' ? closest(wanted) : undefined;
-        if (team) {
-          const n = nearOf(team);
-          if (n.cell >= 0) {
-            const at = s.cellCenter(n.cell);
-            if (!lurking || Math.hypot(lurking.at.x - at.x, lurking.at.y - at.y) > 2 * s.cfg.cellPx) this.lurkAt(u, at, lurking ? lurking.home : this.homeOf(u));
+      };
+      if (sq.phase !== 'go') join();
+      const all = sq.members.length ? units() : pool;
+      if (!all.length) { this.squads.delete(st); continue; }
+      const reach = Math.min(...all.map((u) => strikeOf(kindOf(s, u))));
+      const centre = (list: Unit[]): Vec => ({ x: list.reduce((a, u) => a + u.pos.x, 0) / list.length, y: list.reduce((a, u) => a + u.pos.y, 0) / list.length });
+      const C = centre(all);
+      const kinds = new Set(all.map((u) => kindOf(s, u)));
+      const wanted = this.alerts.filter((al) => STANCE_ANSWERS[st].includes(al.kind) && al.who.some((k) => kinds.has(k)));
+      const inReachAt = (kind: AlertKind, p: Vec, slack: number): boolean => st === 'raid' || kind === 'outpost' || this.nearestCover(cover, p).d <= reach + slack;
+      // The target: kept while it lives and is in reach (a little slack once it is out on it), else the nearest in reach.
+      let P = sq.target ? this.quarryAt(sq.target) : null;
+      if (!P || !sq.target || !inReachAt(sq.target.kind, P, sq.phase === 'go' ? 40 : 0)) {
+        const was = sq.target;
+        sq.target = undefined;
+        P = null;
+        let bd = Infinity;
+        for (const al of wanted) {
+          if (!inReachAt(al.kind, al.at, 0)) continue;
+          const d = Math.hypot(al.at.x - C.x, al.at.y - C.y);
+          if (d < bd) { bd = d; sq.target = { kind: al.kind, targetId: al.targetId }; P = al.at; }
+        }
+        if (sq.target && (!was || was.targetId !== sq.target.targetId)) {
+          // A new target: form up again (a waiting HUNT squad forms up where it waits).
+          if (sq.phase !== 'wait') sq.at = undefined;
+          sq.phase = 'gather';
+          sq.clock = 0;
+          const al = wanted.find((x) => x.targetId === sq.target!.targetId && x.kind === sq.target!.kind);
+          if (al) al.answered = true;
+        }
+      }
+      if (sq.target && P) {
+        if (sq.phase !== 'go') join();
+        const members = units();
+        if (!members.length) continue;
+        const M = centre(members);
+        const spread = Math.max(...members.map((u) => Math.hypot(u.pos.x - M.x, u.pos.y - M.y)));
+        const onIt = Math.hypot(M.x - P.x, M.y - P.y) <= Math.max(reach, 60) + 60;
+        if (sq.phase !== 'go') {
+          // Together already, or the quarry is on top of them, or they have waited long enough: go.
+          if (spread <= 80 || onIt || sq.clock > 12) {
+            if (sq.clock > 12 && sq.at) {
+              // Stragglers still far off go home; the rest go.
+              for (const u of members) if (Math.hypot(u.pos.x - sq.at.x, u.pos.y - sq.at.y) > 160) this.sendHome(u);
+            }
+            sq.phase = 'go';
+            sq.clock = 0;
+          } else {
+            // Form up at the one nearest the target (or where a HUNT squad was waiting).
+            if (!sq.at) {
+              let front = members[0];
+              for (const u of members) if (Math.hypot(u.pos.x - P.x, u.pos.y - P.y) < Math.hypot(front.pos.x - P.x, front.pos.y - P.y)) front = u;
+              sq.at = s.standableAt(front.pos) ?? { ...front.pos };
+            }
+            members.forEach((u, i) => this.setOrder(u, { kind: 'attack', to: this.spot(sq.at!, i, members.length) }));
             continue;
           }
         }
-        if (lurking) { this.lurks.delete(u.id); this.goHome(u, lurking.home); }
+        // Go, together: one out in front of the rest waits for them, unless it is already fighting.
+        const goal = s.standableAt(P) ?? P;
+        const G = centre(units());
+        const dG = Math.hypot(G.x - P.x, G.y - P.y);
+        for (const u of units()) {
+          const fighting = s.enemies.some((e) => !e.burrowed && Math.hypot(e.pos.x - u.pos.x, e.pos.y - u.pos.y) < 90);
+          const ahead = Math.hypot(u.pos.x - G.x, u.pos.y - G.y) > 70 && Math.hypot(u.pos.x - P.x, u.pos.y - P.y) < dG - 30;
+          this.setOrder(u, !fighting && ahead && !onIt ? { kind: 'hold' } : { kind: 'attack', to: goal });
+        }
+        continue;
+      }
+      // No target in reach. HUNT: wait together in cover, nearest the closest science team.
+      if (st === 'hunt' && wanted.length) {
+        let team = wanted[0];
+        for (const al of wanted) if (Math.hypot(al.at.x - C.x, al.at.y - C.y) < Math.hypot(team.at.x - C.x, team.at.y - C.y)) team = al;
+        const n = this.nearestCover(cover, team.at);
+        if (n.cell >= 0) {
+          join();
+          const at = s.cellCenter(n.cell);
+          if (sq.phase !== 'wait' || !sq.at || Math.hypot(sq.at.x - at.x, sq.at.y - at.y) > 2 * s.cfg.cellPx) { sq.phase = 'wait'; sq.at = s.standableAt(at) ?? at; sq.clock = 0; }
+          const members = units();
+          members.forEach((u, i) => this.setOrder(u, { kind: 'attack', to: this.spot(sq.at!, i, members.length) }));
+          continue;
+        }
+      }
+      // Nothing to do: home, each to its own post.
+      for (const u of units()) this.sendHome(u);
+      this.squads.delete(st);
+    }
+    // A unit in a squad whose stance it no longer has goes home.
+    for (const [st, sq] of this.squads) {
+      for (const id of [...sq.members]) {
+        const u = s.unitById(id);
+        if (u && this.stance[kindOf(s, u)] !== st) this.sendHome(u);
       }
     }
-    // A unit whose kind went OFF while it waited goes home.
-    for (const [id, lk] of [...this.lurks]) {
-      const u = s.unitById(id);
-      if (!u) { this.lurks.delete(id); continue; }
-      if (this.stance[kindOf(s, u)] !== 'hunt') { this.lurks.delete(id); this.goHome(u, lk.home); }
-    }
-  }
-
-  /** Wait in cover here, fighting what comes (an attack-move to the spot; the spot becomes its post). */
-  private lurkAt(u: Unit, at: Vec, home: Vec | undefined): void {
-    const s = this.s;
-    const p = s.standableAt(at) ?? at;
-    const list = this.ordersOf(u);
-    list.length = 0;
-    this.route(u, kindOf(s, u), p, list);
-    list.push({ kind: 'attack', to: p });
-    this.lurks.set(u.id, { home, at: p });
   }
 }
 

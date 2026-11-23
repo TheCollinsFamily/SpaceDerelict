@@ -660,13 +660,22 @@ wants one, is ONE click for a whole group.** Every unit kind has a job it does b
     of it is let go and they wait again.
   - **RAID**: the engineers and field stations, anywhere on the board ("where bases are being set up"), then home.
   COVER is a street inside your limbs' fire (`Sim.dangerAt`, the same map the science caste routes round) or on your creep.
+  **One squad a stance, never a drip** (Collins, the same hour: "and it will know to keep them together right? like it
+  would be dumb if they all drip to whatever is closest"). Every unit on a stance is ONE squad with ONE target (kept while
+  in reach, else the alert in reach nearest the squad). It FORMS UP first at the unit nearest the target (a HUNT squad at
+  the spot it waits on) and goes once it is within 80 px of its centre (or the quarry is on it, or after 12 s, when
+  stragglers still 160 px off go home); on the way, a unit more than 70 px ahead of the squad's centre waits for it unless
+  it is already fighting; a unit that comes free while the squad is out (born, healed) waits at home for the next forming-up.
+  (`Squad`, `Groups.squadsStep`, four times a second.)
   The player's own orders always come first; a hurt unit off the creep still walks back onto it. Broodmothers stay OFF by
   default (a mother parked brooding stays parked). The Harrier's old built-in "hunt the science caste anywhere" is gone:
-  that is what HUNT does now, from cover. Code: `STANCES`, `Groups.stancePass` in src/sim/groups.ts; `set-stance`
+  that is what HUNT does now, from cover. Code: `STANCES`, `Groups.squadsStep` in src/sim/groups.ts; `set-stance`
   (`set-auto` still works: on = the kind's usual stance). Tests: tests/groups.test.ts "STANCES".
   **Measured** (GAPS_MODE=expansion[,stance-defend|stance-hunt|stance-raid|noauto], 10 seeds, hold-12): 6/10 in every
-  setting. The scripted player grows few units (0-1 Harriers, a Pit or two), so the stance moves kills, not wins: it is a
-  tool for a player who builds units, not a balance lever.
+  setting, before and after squads. The scripted player grows few units (0-1 Harriers, a Pit or two), so the stance moves
+  kills, not wins: it is a tool for a player who builds units, not a balance lever. Squads raised the default units' kills
+  in the runs that grew them (58 / 73 / 111 against 17 / 0 / 29 one at a time). In the page (seed 42, six warriors on RAID
+  at a station 273 px off) they kept within 70 px of their centre the whole way and arrived together.
 - **The old individual control** (click, box, the command panel, control groups: src/ui/command.ts) stays for players
   who want it; nothing above needs it.
 - **Measured** (`GAPS_MODE=roster` in tools/measure/gaps.measure.ts: the scripted player never selects a unit, releases

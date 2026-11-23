@@ -230,28 +230,31 @@ function tickSome(s: Sim, n: number): void {
 }
 
 describe('STANCES (Collins, Nov 23 2026: defensive, hunter "which targets science teams while trying to stay in cover", offensive "that targets where bases are being set up")', () => {
+  const sq = (s: Sim, st: 'defend' | 'hunt' | 'raid') => s.groups.squads.get(st);
+
   it('DEFEND answers what comes into cover and lets what is out of it be', () => {
     const s = withWarriors();
     expect(s.groups.stance.warrior).toBe('defend');
     const far = (s as unknown as Spawner).spawnEnemy('engineer');
     far.pos = outOfCover(s, 200);
     tickSome(s, 15);
-    expect(s.groups.sorties.size).toBe(0);
+    expect(sq(s, 'defend')?.target).toBeUndefined();
     const near = (s as unknown as Spawner).spawnEnemy('engineer');
     near.pos = inCover(s, 140);
     tickSome(s, 15);
-    expect([...s.groups.sorties.values()].filter((x) => x.targetId === near.id)).toHaveLength(3);
+    expect(sq(s, 'defend')?.target?.targetId).toBe(near.id);
+    expect(sq(s, 'defend')?.members).toHaveLength(3);
   });
 
-  it('DEFEND breaks off a chase once the quarry is out of reach of cover, and comes home', () => {
+  it('DEFEND lets the quarry go once it is out of reach of cover', () => {
     const s = withWarriors();
     const e = (s as unknown as Spawner).spawnEnemy('engineer');
     e.pos = inCover(s, 140);
     tickSome(s, 15);
-    expect(s.groups.sorties.size).toBe(3);
+    expect(sq(s, 'defend')?.target?.targetId).toBe(e.id);
     e.pos = outOfCover(s, 200);
     tickSome(s, 15);
-    expect([...s.groups.sorties.values()].some((x) => x.targetId === e.id)).toBe(false);
+    expect(sq(s, 'defend')?.target).toBeUndefined();
   });
 
   it('RAID goes for an engineer setting up anywhere; OFF waits', () => {
@@ -260,13 +263,15 @@ describe('STANCES (Collins, Nov 23 2026: defensive, hunter "which targets scienc
     const e = (raid as unknown as Spawner).spawnEnemy('engineer');
     e.pos = outOfCover(raid, 200);
     tickSome(raid, 15);
-    expect([...raid.groups.sorties.values()].filter((x) => x.targetId === e.id)).toHaveLength(3);
+    expect(sq(raid, 'raid')?.target?.targetId).toBe(e.id);
+    expect(sq(raid, 'raid')?.members).toHaveLength(3);
 
     const off = withWarriors();
     off.issue({ kind: 'set-stance', who: 'warrior', stance: 'off' });
     const e2 = (off as unknown as Spawner).spawnEnemy('engineer');
     e2.pos = inCover(off, 140);
     tickSome(off, 15);
+    expect(off.groups.squads.size).toBe(0);
     expect(off.groups.sorties.size).toBe(0);
   });
 
@@ -276,32 +281,93 @@ describe('STANCES (Collins, Nov 23 2026: defensive, hunter "which targets scienc
     const r = (raid as unknown as Spawner).spawnEnemy('researcher');
     r.pos = inCover(raid, 140);
     tickSome(raid, 15);
-    expect(raid.groups.sorties.size).toBe(0);
+    expect(sq(raid, 'raid')?.target).toBeUndefined();
 
     const hunt = withWarriors();
     hunt.issue({ kind: 'set-stance', who: 'warrior', stance: 'hunt' });
     const e = (hunt as unknown as Spawner).spawnEnemy('engineer');
     e.pos = inCover(hunt, 140);
     tickSome(hunt, 15);
-    expect(hunt.groups.sorties.size).toBe(0);
+    expect(sq(hunt, 'hunt')?.target).toBeUndefined();
   });
 
-  it('HUNT waits in cover nearest a science team out of reach, and strikes when it comes in reach', () => {
+  it('HUNT waits together in cover nearest a science team out of reach, and strikes when it comes in reach', () => {
     const s = withWarriors();
     s.issue({ kind: 'set-stance', who: 'warrior', stance: 'hunt' });
     const r = (s as unknown as Spawner).spawnEnemy('researcher');
     r.pos = outOfCover(s, 200);
     tickSome(s, 15);
-    expect(s.groups.sorties.size).toBe(0);
-    expect(s.groups.lurks.size).toBe(3);
-    for (const lk of s.groups.lurks.values()) expect(covered(s, s.cellAt(lk.at.x, lk.at.y))).toBe(true);
+    const h = sq(s, 'hunt')!;
+    expect(h.phase).toBe('wait');
+    expect(h.members).toHaveLength(3);
+    expect(covered(s, s.cellAt(h.at!.x, h.at!.y))).toBe(true);
     r.pos = inCover(s, 140);
     tickSome(s, 15);
-    expect([...s.groups.sorties.values()].filter((x) => x.targetId === r.id)).toHaveLength(3);
-    expect(s.groups.lurks.size).toBe(0);
+    expect(sq(s, 'hunt')?.target?.targetId).toBe(r.id);
   });
 
-  it('the player\'s own order comes first: a unit he moved is not given stance work', () => {
+  it('ONE target for the whole squad, never each unit to whatever is closest to it', () => {
+    const s = withWarriors();
+    s.issue({ kind: 'set-stance', who: 'warrior', stance: 'raid' });
+    const ws = unitsOf(s, 'warrior');
+    // Spread out, each nearer a different engineer.
+    const a = (s as unknown as Spawner).spawnEnemy('engineer');
+    const b = (s as unknown as Spawner).spawnEnemy('engineer');
+    a.pos = outOfCover(s, 200);
+    b.pos = { x: s.cfg.gridW * s.cfg.cellPx - a.pos.x, y: s.cfg.gridH * s.cfg.cellPx - a.pos.y };
+    ws[0].pos = s.standableAt({ x: (a.pos.x + s.core.x) / 2, y: (a.pos.y + s.core.y) / 2 }) ?? ws[0].pos;
+    ws[1].pos = s.standableAt({ x: (b.pos.x + s.core.x) / 2, y: (b.pos.y + s.core.y) / 2 }) ?? ws[1].pos;
+    tickSome(s, 15);
+    const r = sq(s, 'raid')!;
+    expect(r.members).toHaveLength(3);
+    expect([a.id, b.id]).toContain(r.target?.targetId);
+    expect(s.groups.sorties.size).toBe(0); // nobody went off on its own
+  });
+
+  it('forms up before it goes: the one in front waits for the rest, and they go together', () => {
+    const s = withWarriors();
+    s.issue({ kind: 'set-stance', who: 'warrior', stance: 'raid' });
+    const ws = unitsOf(s, 'warrior');
+    const far = streetAway(s, ws[0].pos, 150);
+    ws[1].pos = { ...far };
+    ws[2].pos = { ...far };
+    const e = (s as unknown as Spawner).spawnEnemy('engineer');
+    e.pos = outOfCover(s, 250);
+    e.hp = e.maxHp = 1e9; // it must stand while they form up
+    for (let i = 0; i < 20 && !sq(s, 'raid')?.target; i++) tickSome(s, 1); // alerts are read once a second
+    const r = sq(s, 'raid')!;
+    expect(r.target?.targetId).toBe(e.id);
+    expect(r.phase).toBe('gather');
+    let spreadAtGo = Infinity;
+    for (let i = 0; i < 200 && r.phase !== 'go'; i++) {
+      tickSome(s, 1);
+      if ((r.phase as string) === 'go') {
+        const c = { x: ws.reduce((t, w) => t + w.pos.x, 0) / 3, y: ws.reduce((t, w) => t + w.pos.y, 0) / 3 };
+        spreadAtGo = Math.max(...ws.map((w) => Math.hypot(w.pos.x - c.x, w.pos.y - c.y)));
+      }
+    }
+    expect(r.phase).toBe('go');
+    expect(spreadAtGo).toBeLessThanOrEqual(100);
+  });
+
+  it('a unit that comes free while the squad is out waits at home for the next forming-up', () => {
+    const s = withWarriors();
+    s.issue({ kind: 'set-stance', who: 'warrior', stance: 'raid' });
+    const e = (s as unknown as Spawner).spawnEnemy('engineer');
+    e.pos = outOfCover(s, 250);
+    e.hp = e.maxHp = 1e9;
+    for (let i = 0; i < 300 && sq(s, 'raid')?.phase !== 'go'; i++) tickSome(s, 1);
+    expect(sq(s, 'raid')?.phase).toBe('go');
+    // One drops out (as a newborn or a healed one comes free): it does not walk in alone.
+    const late = unitsOf(s, 'warrior')[0] as { id: number; orders?: UnitOrder[] };
+    s.groups.forget(late.id);
+    late.orders = [];
+    tickSome(s, 10);
+    expect(sq(s, 'raid')?.members).not.toContain(late.id);
+    expect(late.orders ?? []).toHaveLength(0);
+  });
+
+  it('the player\'s own order comes first: a unit he moved is not in the squad', () => {
     const s = withWarriors();
     s.issue({ kind: 'set-stance', who: 'warrior', stance: 'raid' });
     const ids = unitsOf(s, 'warrior').map((u) => u.id);
@@ -309,8 +375,8 @@ describe('STANCES (Collins, Nov 23 2026: defensive, hunter "which targets scienc
     const e = (s as unknown as Spawner).spawnEnemy('engineer');
     e.pos = outOfCover(s, 200);
     tickSome(s, 15);
-    expect(s.groups.sorties.has(ids[0])).toBe(false);
-    expect(s.groups.sorties.size).toBe(2);
+    expect(sq(s, 'raid')?.members).not.toContain(ids[0]);
+    expect(sq(s, 'raid')?.members).toHaveLength(2);
   });
 });
 
