@@ -49,6 +49,8 @@ function animateCards(hand: HTMLElement, size: number): void {
 import type { Caste, CasteFocus, OrganId, RootDir, SimEvent, TargetMode, Tower, TowerFamily, UpgradeChoice } from '../sim/types';
 
 import { CARD_DESC, layerTag } from '../../content/limbText';
+import { handCard, limbCard, traitsLine } from './limbStats';
+import { hideLimbCard, showHandCard } from './limbCard';
 export { PIP_DESC, layerTag } from '../../content/limbText';
 
 const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: string; cls: string }>> = {
@@ -348,6 +350,32 @@ export class Hud {
     wrap.classList.add(amount >= 20 ? 'hit-heavy' : 'hit');
   }
 
+  /** The hand card under the pointer (its stat card is up), and when it was last refreshed. */
+  private handHover: { el: HTMLElement; family: TowerFamily } | null = null;
+  private handHoverAt = 0;
+  private simRef: Sim | null = null;
+
+  private showHandStats(el: HTMLElement, family: TowerFamily): void {
+    this.handHover = { el, family };
+    const sim = this.simRef;
+    if (!sim) return;
+    const banked = sim.pendingPips.length;
+    showHandCard(family, handCard(sim, family), el.getBoundingClientRect(),
+      `if placed now on the street${banked ? `, with the ${banked} trait${banked > 1 ? 's' : ''} your sacrifice banked` : ''}; a roof adds reach`);
+  }
+
+  /** Keep the hand card's stat card true (banked traits, organ levels), and gone when its card is. */
+  private refreshHandStats(sim: Sim): void {
+    this.simRef = sim;
+    const h = this.handHover;
+    if (!h) return;
+    if (!h.el.isConnected) { this.handHover = null; hideLimbCard('hand'); return; }
+    const now = performance.now();
+    if (now - this.handHoverAt < 250) return;
+    this.handHoverAt = now;
+    this.showHandStats(h.el, h.family);
+  }
+
   /** The limb inspect panel: hp, stats, traits, and its targeting controls. */
   private updateInspect(sim: Sim): void {
     const panel = document.getElementById('inspect')!;
@@ -367,11 +395,15 @@ export class Hud {
     fill.style.background = frac > 0.4 ? '#7fae52' : 'var(--accent)';
     document.getElementById('inspect-hp-text')!.textContent = `${Math.ceil(t.hp)} / ${Math.ceil(t.maxHp)} HP`
       + ((t.shieldMax ?? 0) > 0 ? ` · SHIELD ${Math.ceil(t.shield ?? 0)}/${Math.ceil(t.shieldMax ?? 0)}` : '');
-    const layer = !st.hitsGround ? 'AIR ONLY' : st.hitsAir ? 'AIR + GROUND' : 'GROUND';
-    document.getElementById('inspect-stats')!.textContent = st.rate > 0
-      ? `${layer}${st.trueSight ? ' · DETECTS' : ''} · dmg ${st.damage.toFixed(0)} · ${st.rate.toFixed(2)}/s · reach ${st.range >= 1000 ? 'the whole board' : Math.round(st.range)}`
-        + ((t.streak ?? 0) > 0 && st.streakRamp > 0 ? ` · streak ${t.streak}` : '')
-      : `support limb · potency ×${st.potency.toFixed(2)} · tempo ×${st.tempo.toFixed(2)} · reach ×${st.reach.toFixed(2)}`;
+    // The numbers in the stat card's own words (src/ui/limbStats.ts), compact; each explains itself under the pointer,
+    // and hovering the limb on the board shows what each means and where it comes from.
+    const card = limbCard(sim, t);
+    const statsHtml = '<div class="is-grid">' + card.rows.filter((r) => r.key !== 'hp').map((r) => `<div class="is-${r.key}${r.trend ? ` ${r.trend}` : ''}" title="${r.explain}"><b>${r.label}</b> ${r.value.replace(' attacks/s', '/s')}`
+      + `${r.base !== undefined ? ` <span class="is-ex">(base ${r.base})</span>` : ''}</div>`).join('')
+      + ((t.streak ?? 0) > 0 && st.streakRamp > 0 ? `<div title="shots held on one target"><b>STREAK</b> ${t.streak}</div>` : '')
+      + '</div>';
+    const statsEl = document.getElementById('inspect-stats')!;
+    if (statsEl.dataset.k !== statsHtml) { statsEl.dataset.k = statsHtml; statsEl.innerHTML = statsHtml; }
     // What it is affecting, in words (the board draws the links).
     document.getElementById('inspect-effect')!.textContent = this.effectText(sim, t);
     const facingRow = document.getElementById('inspect-facing-wrap')!;
@@ -379,15 +411,11 @@ export class Hud {
     for (const b of document.querySelectorAll<HTMLElement>('#inspect-facing button')) {
       b.classList.toggle('on', (t.facing ?? 'N') === b.dataset.dir);
     }
-    const counts = new Map<string, number>();
-    for (const p of t.pips) counts.set(p.family, (counts.get(p.family) ?? 0) + 1);
     const grafting = t.graftUntil !== undefined && t.graftUntil > sim.time
       ? ` · GRAFTING ${(t.graftUntil - sim.time).toFixed(1)}s: holds fire, bleeds double` : '';
     const crowned = t.crowns ? ` · CROWNED${t.crowns > 1 ? ` ×${t.crowns}` : ''}` : '';
     const sheltered = sim.crownsOver(t);
-    document.getElementById('inspect-traits')!.textContent = (t.pips.length
-      ? `traits: ${[...counts].map(([f, n]) => (n > 1 ? `${f}×${n}` : f)).join(', ')}`
-      : 'no inherited traits')
+    document.getElementById('inspect-traits')!.textContent = traitsLine(t)
       + (t.promotions ? ` · promoted ×${t.promotions}` : '') + crowned
       + (sheltered ? ` · under ${sheltered} crown${sheltered > 1 ? 's' : ''}` : '') + grafting;
     this.renderEvolve(sim, t);
@@ -678,6 +706,9 @@ export class Hud {
             costEl.append(part);
           });
         }
+        // Hover: the stat card of what you would get placing it now (base, plus traits a sacrifice banked).
+        div.addEventListener('pointerenter', () => this.showHandStats(div, card.family));
+        div.addEventListener('pointerleave', () => { this.handHover = null; hideLimbCard('hand'); });
         div.addEventListener('click', () => {
           this.selectedCard = this.selectedCard === i ? null : i;
           this.armedOrgan = null;
@@ -690,6 +721,7 @@ export class Hud {
     }
 
     this.updateInspect(sim);
+    this.refreshHandStats(sim);
     if (this.plain) this.revealForMission1(sim);
 
     // Button states.

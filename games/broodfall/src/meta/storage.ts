@@ -158,6 +158,17 @@ export function markRevealSeen(): void {
   try { localStorage.setItem(REVEAL, '1'); } catch { /* ok */ }
 }
 
+const EXPLAIN_SACRIFICE = 'broodfall-explain-sacrifice-seen';
+
+/** The EAT A LIMB explainer (src/ui/sacrificeExplainer.ts) has been shown once. Private mode: as seen (never twice). */
+export function sacrificeExplained(): boolean {
+  try { return localStorage.getItem(EXPLAIN_SACRIFICE) === '1'; } catch { return true; }
+}
+
+export function markSacrificeExplained(): void {
+  try { localStorage.setItem(EXPLAIN_SACRIFICE, '1'); } catch { /* ok */ }
+}
+
 // ------------------------------------------------------------------ the comics he keeps (src/meta/comics.ts)
 
 const COMICS = 'broodfall-comics';

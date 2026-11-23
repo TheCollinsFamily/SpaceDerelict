@@ -897,3 +897,34 @@ body.in-ship #topbar, body.in-ship #botbar { visibility: hidden; }
   content: 'EAT A LIMB'; white-space: nowrap; margin-left: 4px; padding: 0 3px; font-size: 8px; letter-spacing: 1px;
   background: #a8402a; color: #fff3e6; border-radius: 2px; vertical-align: 1px;
 }
+
+/* ---------- limb stat card on hover (src/ui/limbCard.ts; words from src/ui/limbStats.ts) ---------- */
+#limb-card {
+  position: fixed; z-index: 45; pointer-events: none; width: 264px; max-height: calc(100vh - 16px); overflow: hidden;
+  background: var(--panel); border: 3px double var(--panel-edge); padding: 7px 9px 8px;
+  font-size: 11px; line-height: 1.25; color: var(--ink); box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.45);
+}
+#limb-card.hidden { display: none; }
+#limb-card .lc-banner { font-size: 9px; font-weight: bold; letter-spacing: 1px; color: var(--accent); margin-bottom: 3px; text-transform: uppercase; }
+#limb-card .lc-head { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
+#limb-card .lc-name { font-family: Impact, "Arial Black", sans-serif; font-size: 15px; letter-spacing: 1px; text-transform: uppercase; }
+#limb-card .lc-tag { font-size: 8px; font-weight: bold; letter-spacing: 1px; opacity: 0.75; white-space: nowrap; }
+#limb-card .lc-role { font-size: 10px; opacity: 0.8; margin: 1px 0 5px; }
+#limb-card .lc-row { padding: 2px 0 3px; border-top: 1px solid rgba(38, 32, 15, 0.18); }
+#limb-card .lc-line { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
+#limb-card .lc-label { font-size: 9px; font-weight: bold; letter-spacing: 1px; }
+#limb-card .lc-val { font-weight: bold; text-align: right; }
+#limb-card .lc-row.up .lc-val { color: #3f6a22; }
+#limb-card .lc-row.down .lc-val { color: #8a2c18; }
+#limb-card .lc-base { font-style: normal; font-weight: normal; font-size: 9px; opacity: 0.6; margin-left: 5px; }
+#limb-card .lc-ex { font-size: 9px; opacity: 0.65; }
+#limb-card .lc-src { list-style: none; font-size: 9px; color: #5a4210; }
+#limb-card .lc-src li::before { content: '+ '; opacity: 0.6; }
+#limb-card .lc-sub { font-size: 8px; letter-spacing: 2px; font-weight: bold; opacity: 0.7; margin-top: 5px; }
+#limb-card .lc-note { font-size: 9px; font-weight: bold; color: var(--accent); margin-top: 4px; text-transform: uppercase; }
+#limb-card .lc-foot { font-size: 9px; opacity: 0.6; margin-top: 5px; font-style: italic; }
+#inspect-stats .is-ex { text-transform: none; opacity: 0.7; font-size: 9px; }
+#inspect-stats .is-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px 8px; }
+#inspect-stats .is-grid .is-hits, #inspect-stats .is-grid .is-feeds { grid-column: 1 / -1; }
+#inspect-stats .is-grid .up { color: #3f6a22; }
+#inspect-stats .is-grid .down { color: #8a2c18; }

@@ -120,6 +120,36 @@ body:has(#menu.console-menu:not(.hidden)) #topbar, body:has(#menu.console-menu:n
 #menu.console-menu .ent-picker { margin: 0; flex-wrap: nowrap; gap: 4px; }
 #menu.console-menu .ent-opt { background: none; color: #e9eef0; border: 1px solid rgba(235, 245, 248, 0.3); font: 11px Bahnschrift, "Segoe UI", sans-serif; letter-spacing: 1px; padding: 0 8px; cursor: pointer; }
 #menu.console-menu .ent-opt.on { background: #e9eef0; color: #07090b; }
+/* The skirmish's ORDER (src/main.ts wireOrderPicker): four plain buttons under SKIRMISH, the picked one's line and length below. */
+.order-picker { display: grid; grid-template-columns: auto 1fr; gap: 4px 8px; align-items: center; margin: 0 0 4px; }
+.order-label { font: 400 9px/1 Bahnschrift, "Segoe UI", sans-serif; letter-spacing: 2.5px; color: rgba(233, 238, 240, 0.6); }
+.order-opts { display: flex; gap: 4px; flex-wrap: wrap; }
+.order-opt { background: none; color: #e9eef0; border: 1px solid rgba(235, 245, 248, 0.3); font: 11px/1 Bahnschrift, "Segoe UI", sans-serif; letter-spacing: 1px; padding: 6px 8px; cursor: pointer; text-transform: uppercase; }
+.order-opt:hover, .order-opt:focus-visible { border-color: #fff; outline: none; }
+.order-opt.on { background: #e9eef0; color: #07090b; border-color: #fff; }
+.order-line { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 10px; font: 12px/1.35 Bahnschrift, "Segoe UI", sans-serif; letter-spacing: 0.5px; color: rgba(233, 238, 240, 0.78); min-height: 16px; }
+.order-len { white-space: nowrap; color: rgba(233, 238, 240, 0.5); letter-spacing: 1.5px; font-size: 10px; text-transform: uppercase; align-self: center; }
+#ship .order-picker { margin: 0 auto 14px; max-width: 560px; }
+
+/* ---- the EAT A LIMB explainer (src/ui/sacrificeExplainer.ts): once, the first time a card is picked up with a limb to eat ---- */
+#explain-sacrifice { position: fixed; inset: 0; z-index: 58; background: rgba(3, 4, 5, 0.72); display: flex; align-items: center; justify-content: center; cursor: pointer; animation: ys-in 0.3s ease-out; transition: opacity 0.25s; padding: 16px; }
+#explain-sacrifice.leaving { opacity: 0; pointer-events: none; }
+#explain-sacrifice .xs-card {
+  position: relative; width: min(560px, 100%); padding: 18px 22px 16px; color: #e9eef0; font-family: Bahnschrift, "DIN Alternate", "Segoe UI", Arial, sans-serif;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0) 38%), #07090b; border: 1px solid rgba(235, 245, 248, 0.3);
+  box-shadow: 0 0 0 1px #000, 0 12px 50px rgba(0, 0, 0, 0.7);
+}
+#explain-sacrifice .xs-card::before { content: ''; position: absolute; left: -1px; top: 16px; bottom: 16px; width: 3px; background: #ff6a55; }
+#explain-sacrifice .xs-title { font: 300 22px/1 inherit; font-family: inherit; letter-spacing: 6px; color: #ff8a6a; margin-bottom: 12px; }
+#explain-sacrifice .xs-film { border: 1px solid rgba(235, 245, 248, 0.22); background: #000; line-height: 0; }
+#explain-sacrifice video { width: 100%; height: auto; max-height: 46vh; object-fit: contain; display: block; }
+#explain-sacrifice .xs-card { max-height: calc(100vh - 32px); overflow-y: auto; }
+#explain-sacrifice .xs-lines { list-style: none; margin: 12px 0 14px; padding: 0; display: flex; flex-direction: column; gap: 7px; font-size: 15px; line-height: 1.35; color: rgba(233, 238, 240, 0.9); }
+#explain-sacrifice .xs-lines li { padding-left: 14px; position: relative; }
+#explain-sacrifice .xs-lines li::before { content: ''; position: absolute; left: 0; top: 0.55em; width: 5px; height: 5px; background: #ff6a55; }
+#explain-sacrifice .xs-lines b { color: #fff; font-weight: 600; }
+#explain-sacrifice .xs-ok { display: block; margin-left: auto; min-width: 120px; font: 400 15px/1 inherit; font-family: inherit; letter-spacing: 5px; padding: 10px 18px; color: #07090b; background: #e9eef0; border: 1px solid #fff; cursor: pointer; }
+#explain-sacrifice .xs-ok:hover, #explain-sacrifice .xs-ok:focus-visible { background: #fff; outline: 2px solid #ff6a55; outline-offset: 2px; }
 .menu-settings { display: none; flex-direction: column; gap: 4px; padding-left: 18px; border-left: 1px solid rgba(235, 245, 248, 0.2); }
 #menu.settings-open .menu-settings { display: flex; }
 @media (max-height: 640px) { #menu.console-menu .logo-title { --emblem-size: 90px; --word-size: 46px; } .menu-item { padding: 8px 12px; } }

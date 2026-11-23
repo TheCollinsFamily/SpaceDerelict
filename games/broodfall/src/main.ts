@@ -9,6 +9,8 @@ import { DT, Sim, organSpec, towerSpec } from './sim/sim';
 import { SHAPES, footprintName, footprintOf, isMultiCell, turnsItsGround, type ShapeId } from './sim/footprint';
 import { Renderer, type PlacementPreview } from './render/render';
 import { hideReachTip, reachText, showReachTip } from './ui/reachTip';
+import { limbCard as limbStatCard } from './ui/limbStats';
+import { hideLimbCard, limbCardShowing, showLimbCard } from './ui/limbCard';
 import { IsoRenderer } from './render/isoRender';
 import { BoardArtSet, artUrl, loadManifest, pickBiome } from './render/art';
 import { Hud, PIP_DESC } from './ui/hud';
@@ -29,7 +31,9 @@ import { addRunButton, installEdgeScroll, markSpeed, openSettings, settingsOpen 
 import { addCodexRunButton, codexOpen, openCodex } from './ui/codex';
 import { SpaceLatch, spaceStep } from './ui/phaseKeys';
 import { turnOf } from './meta/settings';
-import { loadSettings } from './meta/storage';
+import { loadSettings, markSacrificeExplained, sacrificeExplained } from './meta/storage';
+import { explainerOpen, openSacrificeExplainer, shouldExplainSacrifice } from './ui/sacrificeExplainer';
+import { ORDER_CHOICES, choiceFrom, directiveFor, loadOrderChoice, orderText, saveOrderChoice, type OrderChoice } from './meta/skirmishOrder';
 import { strainIcons, strainKey, strainLabel } from './ui/strain';
 import { GENES } from '../content/plates';
 import { BALANCE as B } from '../content/data';
@@ -45,7 +49,7 @@ import { platePicture } from './render/platePreview';
 import { installCommand, type Command as UnitCommand } from './ui/command';
 import { installDistrictPlacer, type DistrictPlacer } from './ui/districtPlace';
 import { installRoster, type Roster } from './ui/roster';
-import type { Directive, OrganId, RootDir, SimConfig, SimEvent, Tower, TowerFamily } from './sim/types';
+import type { OrganId, RootDir, SimConfig, SimEvent, Tower, TowerFamily } from './sim/types';
 import { initAudio, setScene } from './audio/engine';
 import { boardEvents, installConsoleSounds, setBoardPan, watchBoard } from './audio/gameSounds';
 import { sceneOf, type MusicScene } from './audio/cues';
@@ -90,12 +94,12 @@ const START_SPEED = Number(params.get('speed') ?? 1);
 /** 'top' = the old top-down board drawn as shapes; anything else = the isometric board, when its art is there. */
 const VIEW = params.get('view');
 
-const DIRECTIVES: Record<string, Directive> = {
-  hold: { kind: 'hold', waves: 12 },
-  royal: { kind: 'royal', count: 1 },
-  harvest: { kind: 'harvest', science: 80 },
-};
-const directive = DIRECTIVES[params.get('directive') ?? ''];
+/**
+ * The order a skirmish deploys with: ?directive= (hold / royal / harvest / random), else the one picked last beside
+ * SKIRMISH (src/meta/skirmishOrder.ts); `random` leaves it to the run's own dice. A campaign deployment's plan sets its own.
+ */
+const ORDER: OrderChoice = params.has('directive') ? choiceFrom(params.get('directive')) : loadOrderChoice();
+const directive = directiveFor(ORDER, B);
 
 // ?tryShape=lasher:L3,impaler:line3 — try a limb on another footprint (src/sim/footprint.ts SHAPES, or 2x2 /
 // 1x2 / 1x1 for a rectangle): for Collins to feel the footprint plan (notes/FOOTPRINT-PLAN.md) before it is
@@ -333,6 +337,7 @@ const hud = new Hud({
     selectedCard = i;
     placeFacing = null; // a fresh pick starts facing the nearest gate
     updateHint();
+    maybeExplainSacrifice();
   },
   onDiscardCard(i) {
     sim.issue({ kind: 'discard', cardIndex: i });
@@ -458,6 +463,32 @@ function updateHint(): void {
         ? 'WAVE SETUP: place limbs, then START THE WAVE (Space) — unspent war and science are lost when it starts (chyme is kept)'
         : 'select a limb card below, then click a creeped block by a street — the assault forms at the glowing gate');
   }
+}
+
+/** The EAT A LIMB explainer has been shown on this page (?explain=sacrifice shows it once a page, seen or not). */
+let explainedHere = false;
+/** The first time a card is picked up with a limb standing to eat: the EAT A LIMB pop-up (src/ui/sacrificeExplainer.ts), the clock stopped. */
+function maybeExplainSacrifice(): void {
+  if (explainedHere || explainerOpen() || !started || debriefShown) return;
+  const show = shouldExplainSacrifice({
+    seen: sacrificeExplained(),
+    automated: AUTO || (typeof navigator !== 'undefined' && !!navigator.webdriver),
+    forced: params.get('explain') === 'sacrifice',
+    cardInHand: selectedCard !== null && !!sim.hand[selectedCard],
+    eatable: sim.towers.filter((t) => t.family !== 'tap').length,
+    phase: sim.phase,
+    wavesCleared: sim.wavesCleared,
+    mission1: FIRST,
+    cannibalShown: document.body.classList.contains('m1-cannibal'),
+    onlyBySacrifice: selectedCard !== null && sacrificeOnly(selectedCard).length > 0,
+  });
+  if (!show) return;
+  explainedHere = true;
+  markSacrificeExplained();
+  const was = speed;
+  speed = 0;
+  markSpeed(0);
+  openSacrificeExplainer(artUrl('explain/sacrifice.mp4'), Math.round(B.salvageRate * 100), () => { speed = was; markSpeed(speed); });
 }
 
 // ---------- mission 1: teaching by doing ----------
@@ -637,6 +668,34 @@ function wireEntrancePicker(containerId: string): void {
       btn.classList.add('on');
     });
   });
+}
+
+/**
+ * The skirmish ORDER beside the deploy button (Collins, Nov 23 2026): HOLD, KILL THE ROYAL, BANK SCIENCE or RANDOM,
+ * each with its one line and rough length (read from BALANCE: src/meta/skirmishOrder.ts). The last one picked is kept.
+ */
+function wireOrderPicker(containerId: string): void {
+  const wrap = document.getElementById(containerId);
+  if (!wrap || wrap.dataset.wired) return;
+  wrap.dataset.wired = '1';
+  const opts = wrap.querySelector<HTMLElement>('.order-opts')!;
+  const line = wrap.querySelector<HTMLElement>('.order-line')!;
+  const describe = (c: OrderChoice): void => {
+    const t = orderText(c, B);
+    line.innerHTML = `<span class="order-desc">${t.line}</span><span class="order-len">${t.length}</span>`;
+  };
+  const show = (c: OrderChoice): void => {
+    describe(c);
+    opts.querySelectorAll<HTMLElement>('.order-opt').forEach((b) => b.classList.toggle('on', b.dataset.order === c));
+  };
+  opts.innerHTML = ORDER_CHOICES.map((c) => `<button class="order-opt" type="button" data-order="${c}">${orderText(c, B).name}</button>`).join('');
+  opts.querySelectorAll<HTMLElement>('.order-opt').forEach((b) => {
+    const c = b.dataset.order as OrderChoice;
+    b.addEventListener('click', () => { saveOrderChoice(c); show(c); });
+    b.addEventListener('mouseenter', () => describe(c));
+    b.addEventListener('mouseleave', () => describe(loadOrderChoice()));
+  });
+  show(loadOrderChoice());
 }
 
 // ---------- the campaign (the ship, the globe, the debrief) ----------
@@ -848,12 +907,15 @@ function setupMenu(): void {
     ? `Skirmish: spliced genes ${meta.genes.map((id) => GENES.find((g) => g.id === id)?.name ?? id).join(', ')}`
     : '';
   wireEntrancePicker('menu-entrances');
+  wireOrderPicker('menu-orders');
   document.getElementById('menu-deploy')!.addEventListener('click', () => {
-    // The wager applies from the NEXT board build; reload if it differs.
-    if ((meta.entrances ?? 1) !== ENTRANCES) {
+    // The wager and the order apply from the NEXT board build; reload if either differs.
+    const order = loadOrderChoice();
+    if ((meta.entrances ?? 1) !== ENTRANCES || order !== ORDER) {
       const q = new URLSearchParams(location.search);
       q.set('autostart', '1');
       q.set('entrances', String(meta.entrances ?? 1));
+      q.set('directive', order);
       location.href = `${location.pathname}?${q.toString()}`;
       return;
     }
@@ -924,7 +986,7 @@ function setupScreens(): void {
     const q = new URLSearchParams();
     q.set('autostart', '1');
     q.set('entrances', String(meta.entrances ?? 1));
-    if (params.get('directive')) q.set('directive', params.get('directive')!);
+    q.set('directive', loadOrderChoice());
     location.href = `${location.pathname}?${q.toString()}`;
   });
 }
@@ -937,6 +999,7 @@ function showShip(): void {
     `Service standing: ${meta.standing}. `
     + 'One splice is authorized for the replacement organism.';
   wireEntrancePicker('ship-entrances');
+  wireOrderPicker('ship-orders');
   const wrap = document.getElementById('ship-genes')!;
   wrap.innerHTML = '';
   const available = GENES.filter((g) => !meta.genes.includes(g.id));
@@ -1173,6 +1236,46 @@ function cancelAll(): void {
   hud.inspectedId = null;
   renderer.selectedTowerId = null;
   updateHint();
+}
+
+/**
+ * THE LIMB STAT CARD on hover (src/ui/limbCard.ts, words in src/ui/limbStats.ts): beside the limb, never over it.
+ * Shown from the board's pointermove; kept true (and hidden when covered) by limbHoverTick in the frame loop.
+ */
+let limbHover: { id: number; x: number; y: number; banner: string } | null = null;
+let limbHoverSeen = false;
+let limbHoverAt = 0;
+function hoverLimbStats(id: number, clientX: number, clientY: number, banner = ''): void {
+  const t = sim.towers.find((x) => x.id === id);
+  if (!t) { hideLimbCard('limb'); limbHover = null; return; }
+  limbHoverSeen = true;
+  limbHover = { id, x: clientX, y: clientY, banner };
+  const rect = renderer.app.canvas.getBoundingClientRect();
+  const toClient = (wx: number, wy: number) => {
+    const q = renderer.worldToScreen(wx, wy);
+    return { x: rect.left + q.x * rect.width / q.vw, y: rect.top + q.y * rect.height / q.vh };
+  };
+  let left = Infinity, right = -Infinity, top = Infinity, bottom = -Infinity;
+  for (const c of t.cells ?? [t.cell]) {
+    const m = sim.cellCenter(c);
+    const q = toClient(m.x, m.y);
+    left = Math.min(left, q.x); right = Math.max(right, q.x); top = Math.min(top, q.y); bottom = Math.max(bottom, q.y);
+  }
+  // One cell on screen, for the limb's own picture around its ground (it stands up above it).
+  const a = toClient(t.pos.x, t.pos.y);
+  const b = toClient(t.pos.x + sim.cfg.cellPx, t.pos.y);
+  const u = Math.max(12, Math.hypot(b.x - a.x, b.y - a.y));
+  showLimbCard(id, limbStatCard(sim, t), { left: Math.min(left, clientX) - u, right: Math.max(right, clientX) + u, top: top - 2 * u, bottom: bottom + u }, clientY, banner);
+}
+/** Each frame: refresh the hovered limb's card a few times a second, and hide it when anything covers the board. */
+function limbHoverTick(now: number): void {
+  if (!limbHover || limbCardShowing()?.kind !== 'limb') return;
+  const covered = under.open || settingsOpen() || codexOpen() || debriefShown
+    || document.elementFromPoint(limbHover.x, limbHover.y) !== renderer.app.canvas;
+  if (covered || !sim.towers.some((t) => t.id === limbHover!.id)) { hideLimbCard('limb'); limbHover = null; return; }
+  if (now - limbHoverAt < 250) return;
+  limbHoverAt = now;
+  hoverLimbStats(limbHover.id, limbHover.x, limbHover.y, limbHover.banner);
 }
 
 /** The player's own tower under a world point (click/hover pick radius). */
@@ -1563,8 +1666,12 @@ async function boot(): Promise<void> {
     if (idle && started && !debriefShown) openRunSettings();
     else cancelAll();
   });
+  renderer.app.canvas.addEventListener('pointerleave', () => { hideLimbCard('limb'); limbHover = null; });
   renderer.app.canvas.addEventListener('pointermove', (ev) => {
     hideReachTip();
+    // The stat card stays only if this move shows it again (hoverLimbStats); any other branch puts it away.
+    limbHoverSeen = false;
+    queueMicrotask(() => { if (!limbHoverSeen) { hideLimbCard('limb'); limbHover = null; } });
     if (placer?.active()) return; // a drafted district in hand: src/ui/districtPlace.ts answers
     if (armedPlinth) {
       const wp = renderer.toWorld(ev.clientX, ev.clientY);
@@ -1618,6 +1725,9 @@ async function boot(): Promise<void> {
         hoverDonorId = null;
         renderer.donorHighlightId = null;
       }
+      // One of your limbs under the pointer, nothing armed: its stat card beside it.
+      const lt = !hovered && !site && armedThrower === null ? towerNearWorld(wh.x, wh.y) : null;
+      if (lt) hoverLimbStats(lt.id, ev.clientX, ev.clientY);
       return;
     }
     const w = renderer.toWorld(ev.clientX, ev.clientY);
@@ -1634,6 +1744,8 @@ async function boot(): Promise<void> {
       }
       if (donorId !== null) {
         renderer.preview = null;
+        // What you would eat: its stat card too (the click still eats it, as the hint says).
+        hoverLimbStats(donorId, ev.clientX, ev.clientY, 'click to eat it: its traits go into the new limb');
         return;
       }
     }
@@ -1689,6 +1801,7 @@ async function boot(): Promise<void> {
     if (sim.phase !== hintPhase) { hintPhase = sim.phase; updateHint(); }
     if (started) watchBoard(sim);
     hud.update(sim);
+    limbHoverTick(now);
     decreeBox.update();
     under.update();
     updateBoardPanel();

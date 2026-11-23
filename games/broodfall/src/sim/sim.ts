@@ -3411,6 +3411,11 @@ export class Sim {
     }
   }
 
+  /** The body's own bite (dps): its venom matures a step with every wave cleared (BALANCE coreDpsStart / PerWave). */
+  get coreDps(): number {
+    return Math.min(B.coreDps, B.coreDpsStart + B.coreDpsPerWave * this.waveDepth);
+  }
+
   /** The body defends itself: focused damage to the nearest intruder inside reach. */
   private updateCoreAttack(): void {
     let target: Enemy | null = null;
@@ -3421,7 +3426,7 @@ export class Sim {
       const d = dist(e.pos, this.core);
       if (d <= bestD) { bestD = d; target = e; }
     }
-    if (target) this.damageEnemy(target, B.coreDps * DT, 1);
+    if (target) this.damageEnemy(target, this.coreDps * DT, 1);
   }
 
   // ---------- movement ----------

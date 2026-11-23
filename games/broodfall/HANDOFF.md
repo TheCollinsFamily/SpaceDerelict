@@ -36,6 +36,26 @@ process only verified its own assumptions. The repo's CLAUDE.md carries the stan
   own CLAUDE.md with hard rules. Most important: **never deploy without Collins's explicit
   approval**, billing fails closed, and never log user content.
 
+## The EAT A LIMB explainer and the skirmish ORDER picker (Nov 23 2026)
+
+- **EAT A LIMB pop-up** (`src/ui/sacrificeExplainer.ts`, called from `maybeExplainSacrifice()` in `src/main.ts` on every card pick-up).
+  Shown ONCE ever (`broodfall-explain-sacrifice-seen`, `src/meta/storage.ts`): the first time a card is picked up with one of
+  his limbs standing to eat, in the wave setup (or any time the card can only be paid for by eating). Mission 1 waits for its
+  own reveal of cannibalizing (`m1-cannibal`: a few limbs after wave 2), or a card only a sacrifice pays after wave 1. Never
+  under `?auto=1` or a driven browser (navigator.webdriver) unless `?explain=sacrifice`. The clock stops while it is open; OK,
+  a click, Esc, Enter or Space closes it (keys are its own: Space does not start the wave behind it). The rule is the pure
+  `shouldExplainSacrifice` (tests/explainAndOrder.test.ts).
+- **Its film** `public/art/explain/sacrifice.mp4` (720x450 h264, silent, ~7.8 s, ~320 KB) is filmed FROM THE REAL GAME by
+  `node tools/media/film-sacrifice.mjs 5322` (a skirmish in a muted headless browser: Spitter standing, Lasher card picked,
+  hover, eat, place; a drawn pointer since a headless page has none; ffmpeg crops to the action). Re-film it when the board or
+  HUD look changes. Serve on a dev server with `BROODFALL_NO_HMR=1`, or another session's save reloads the page mid-take.
+- **Skirmish ORDER** (`src/meta/skirmishOrder.ts`, `wireOrderPicker` in `src/main.ts`, `#menu-orders` under SKIRMISH and
+  `#ship-orders` on the redeploy screen): HOLD / KILL THE ROYAL / BANK SCIENCE / RANDOM, a line and rough length each read
+  from BALANCE (`holdWaves`, `royalGuaranteeWave`, `harvestScience`; the harvest's "about 8-10 waves" is the tuning target,
+  not a measure). Kept in `broodfall-skirmish-order`; a deploy whose order differs from the page's reloads with `?directive=`.
+  `?directive=random` or none-picked leaves it to the run's dice as before.
+- Check both in the real page: `node tools/shot-explain.mjs 5322` (pictures in `notes/screens/2026-11-23/explain/`).
+
 ## Chyme: the organ stage's own currency (Nov 22 2026; DESIGN.md "CHYME")
 
 Collins: "the organ stage is using the same currency as the limb stage this is not good game design a secondary currency

@@ -902,8 +902,15 @@ export const BALANCE = {
   corpseCellCap: 4,
   /** Separate bodies on the board before the oldest merge into heaps (performance; meat summed, never lost). */
   corpseBoardCap: 160,
-  /** The body itself fights: focused dps on the nearest intruder inside the body. */
+  /**
+   * The body itself fights: focused dps on the nearest intruder inside the body. ITS VENOM MATURES (Nov 23 2026, Collins:
+   * "round one should be losable but still something of a tutorial"): a fresh crash bites at coreDpsStart, +coreDpsPerWave
+   * for every wave cleared, up to coreDps. At 24 from the first second a player who built nothing lived to wave 5: the
+   * meteor alone held the first three waves. The body grows, the enemy does not harden (DESIGN.md "The pressure curve").
+   */
   coreDps: 24,
+  coreDpsStart: 8,
+  coreDpsPerWave: 3,
   coreReachScale: 0.6,
   projectileSpeed: 260,
 } as const;
