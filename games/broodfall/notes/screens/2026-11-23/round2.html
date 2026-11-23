@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Broodfall Loop Round Two</title>
+<style>
+:root{--bg:#121416;--panel:#1a1f21;--ink:#e6e9ea;--dim:#9aa3a6;--line:#2c3236;--ok:#7fd08a;--warn:#ffb454;--bad:#ff6a55}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,sans-serif;margin:0;padding:24px 16px}
+main{max-width:1060px;margin:auto}h1{font-size:27px;margin:0 0 4px}h2{font-size:20px;margin:38px 0 8px;border-top:1px solid var(--line);padding-top:18px}
+.short{border-left:4px solid var(--ok);padding:10px 16px;background:var(--panel)}
+img,video{max-width:100%;border:1px solid var(--line);display:block}
+table{border-collapse:collapse;width:100%;font-size:14px}td,th{border:1px solid var(--line);padding:5px 8px;text-align:left;vertical-align:top}th{background:var(--panel)}
+.ok{color:var(--ok);font-weight:bold}.warn{color:var(--warn);font-weight:bold}.bad{color:var(--bad);font-weight:bold}
+.cap{color:var(--dim);font-size:14px}.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:700px){.pair{grid-template-columns:1fr}}
+.dec{background:var(--panel);border:1px solid var(--line);padding:10px 14px;margin:8px 0}
+</style></head><body><main>
+<h1>Broodfall: the loop, round two</h1>
+<p class="cap">Nov 23 2026. Everything here was played headless with the sound muted. All 960 tests pass, and it is all pushed to main.</p>
+<div class="short"><b>Short version:</b>
+<ul>
+<li><b>The run unfolds.</b> Organs open in blocks, the science caste is announced when it arrives, and the royal court comes at wave 6.</li>
+<li><b>Round one can be lost, but it still teaches.</b> If you build nothing, you lose in wave 1 or 2. Sensible play clears wave 1 with the core at 91% or more.</li>
+<li><b>Leftover science now turns into chyme</b> instead of vanishing.</li>
+<li><b>New on screen:</b> you pick the skirmish order, a first-time EAT A LIMB pop-up plays a film from the real game, and hovering any limb or card shows its stats explained.</li>
+<li><b>Sacrifice keeps power in check</b>, but it is weakest exactly where the fantasy wants it strongest. See below.</li>
+</ul>
+There are four decisions for you at the bottom.</div>
+
+<h2>Scoreboard: before and after</h2>
+<table>
+<tr><th>Measured</th><th>Before</th><th>Now</th><th>Verdict</th></tr>
+<tr><td>Test bot wins, hold 12 waves, one gate</td><td>10/10</td><td>7/10 (lost in waves 6, 6, 8)</td><td class="ok">hard enough</td></tr>
+<tr><td>Player who builds nothing</td><td>lost in wave 5</td><td>lost in wave 1 (2 seeds) or 2 (8 seeds)</td><td class="ok">round one can be lost</td></tr>
+<tr><td>Player who places at random</td><td>survived to waves 5-8</td><td>lost in waves 2-4</td><td class="ok">placement matters early</td></tr>
+<tr><td>Sensible play, core after wave 1</td><td>94-100%</td><td>91-100%</td><td class="ok">still a tutorial</td></tr>
+<tr><td>My careless script player (no organs, first free cells)</td><td>won in wave 5, core untouched</td><td>lost in wave 4</td><td class="ok">organs now matter</td></tr>
+<tr><td>Skirmish length by order</td><td>4 / 9 / 20 min, drawn at random</td><td>you pick: harvest ~10 min, royal ~10 min, hold ~16 min</td><td class="ok">fixed</td></tr>
+<tr><td>Organs owned as waves start</td><td>all of them by wave 9</td><td>1, 3, 5 … 21: at most 2 new organs per stage</td><td class="ok">a choice every stage</td></tr>
+<tr><td>Science lost per late wave</td><td>115-214</td><td>about 1 (becomes chyme, 3 for 1)</td><td class="ok">fixed</td></tr>
+<tr><td>Royal meat per run</td><td>~5, all in wave 8</td><td>~21, from wave 6 on</td><td class="ok">decrees matter</td></tr>
+</table>
+
+<h2>What opens when</h2>
+<table>
+<tr><th>When</th><th>What opens</th><th>How the player is told</th></tr>
+<tr><td>Start</td><td>Gut, Bone Forge, Mucus Lattice, Venom Sac, Auxiliary Heart, Tendril Root</td><td>The organ stage's head row shows what's coming next</td></tr>
+<tr><td>Wave 2</td><td>The science caste arrives</td><td>Banner: "THE SCIENCE CASTE COMES…"</td></tr>
+<tr><td>After wave 2</td><td>Creep organs, Nerve Cluster, Brood Womb</td><td>"NEW ON THE SHELF", NEW badges, a feed line</td></tr>
+<tr><td>After wave 3</td><td>Brain Node, Pheromone Gland, Atrophy Gland, Rumen, Scaffold, Seeder</td><td>Same</td></tr>
+<tr><td>After wave 4</td><td>Marrow Vault, Resonance Chamber, the rest of the creep organs</td><td>Same</td></tr>
+<tr><td>After wave 5</td><td>Infestor, Harrier, Mule</td><td>Same</td></tr>
+<tr><td>Wave 6</td><td>The royal court: royal meat and Royal Decrees</td><td>Banner: "THE COURT TAKES THE FIELD…"</td></tr>
+</table>
+<p>Organs that aren't open yet stay on the shelf, dimmed, marked "OPENS AFTER WAVE N", so you can plan ahead. The campaign keeps its own unlocks, and mission 1 is still war-only.</p>
+<img src="final/organhead-1600x1000.png" alt="Organ stage after wave 1 with the shelf partly open">
+<p class="cap">The organ stage after wave 1, in the real page. I found and fixed one problem here myself: the new shelf news had squeezed the chyme note into a one-word column and pushed TO THE SURFACE off the window. It is checked at 1366, 1600 and 1920 wide.</p>
+<div class="pair"><img src="unfold/unfold-banner-science.png" alt="Science caste banner"><img src="unfold/unfold-banner-court.png" alt="Court banner"></div>
+
+<h2>Is the sacrifice mechanic managing power levels?</h2>
+<p>I had the test bot eat limbs four different ways, over whole 12-wave runs:</p>
+<table>
+<tr><th>How it eats</th><th>Wins</th><th>Limbs eaten</th><th>Meat lost to eating</th><th>Most bonuses on one limb</th><th>Best limb's share of all damage</th></tr>
+<tr><td>Never</td><td>4/6</td><td>0</td><td>0</td><td>1.8</td><td>18%</td></tr>
+<tr><td>Now and then (every 4th build)</td><td class="ok">5/6</td><td>20</td><td>100</td><td>2.2</td><td>25%</td></tr>
+<tr><td>Greedy (every 2nd build)</td><td class="bad">2/6</td><td>22</td><td>160</td><td>3.3</td><td>37%</td></tr>
+<tr><td>Feed one monster limb</td><td class="bad">3/6</td><td>28</td><td>210</td><td>3.7</td><td>46%</td></tr>
+</table>
+<p class="cap">On the new balance, 6 seeds each. The older balance, with 10 seeds, gave the same order: 8, 10, 9 and 8 wins.</p>
+<p><b>What it shows:</b></p>
+<ul>
+<li><span class="ok">It doesn't run away.</span> Even when everything is fed into one limb, that limb peaks below half the body's damage and carries at most about 4 bonuses. Each bonus adds +20-25%, so a fed limb gets stronger without breaking the game.</li>
+<li><span class="ok">It's a real choice.</span> Eating now and then beats never eating. Eating too much loses, because every meal throws away 40% of a limb, costs you a body on the board, and raises interest, which draws the science caste.</li>
+<li><span class="warn">The weak spot: the monster-limb fantasy doesn't pay.</span> Feeding one limb on purpose is the most "I'm a growing monster" way to play, and it's the worst strategy. A limb with 4 bonuses is only about 1.5-2x as strong, but it cost 4 whole limbs. Because the power is spread across +20% steps, sacrifice is a small tweak rather than a build. Decision 1 below.</li>
+</ul>
+
+<h2>The EAT A LIMB pop-up</h2>
+<p>It shows once, the first time you pick up a card while one of your limbs is standing and could be eaten. It never shows on your very first click, because there's nothing to eat yet. In mission 1 it waits until the coaching has introduced cannibalizing. The game pauses while it's open, and OK, Esc, Enter or a click closes it.</p>
+<p>The film is cut from a real run: a Spitter standing, a Lasher card picked up, the pointer on the Spitter, the click eating it, and the Lasher placed carrying the Spitter's trait. It is 7.8 seconds, silent, and loops.</p>
+<div class="pair"><img src="explain/explain-popup.png" alt="The EAT A LIMB pop-up"><video src="../../../public/art/explain/sacrifice.mp4" autoplay loop muted playsinline controls></video></div>
+
+<h2>Hover stats with explanations</h2>
+<p>Hovering one of your limbs shows a card beside it with these rows, each with a short plain line saying what it means: HP, what it hits, damage, speed, damage per second, reach in cells, and its special powers. A boosted number is coloured, shows its base value, and lists where the boost comes from (an inherited trait, roof height, an organ level, an evolution, a crown). Hovering a card in your hand shows what that limb would be if you placed it now, including bonuses banked by a sacrifice. The click panel uses the same words.</p>
+<div class="pair"><img src="limbcard-inherited-lasher-1366x768.png" alt="Hover card on a Lasher with an inherited Spitter trait"><img src="limbcard-hand-1600x1000.png" alt="Hover card on a hand card"></div>
+
+<h2>Picking the order</h2>
+<p>Under SKIRMISH there is now an ORDER row: Hold, Kill the Royal, Bank Science, or Random. Each one has a line saying what it asks and roughly how long it runs. Your last choice is remembered.</p>
+<img src="explain/order-picker-menu.png" alt="The order picker on the main menu" style="max-width:640px">
+
+<h2>Your decisions</h2>
+<div class="dec"><b>1. Make the monster limb worth building?</b> Right now feeding one limb is the losing play. Recommended: each eaten limb's bonus counts a little more on a limb that already carries bonuses (for example +5% per bonus already there). One fed limb could then end up about 3x a fresh one: still not a runaway, but a real build path. Or keep sacrifice as the small tweak it is now.</div>
+<div class="dec"><b>2. Hold length.</b> Hold runs 12 waves (~16 min) while the other two orders run about 8 (~10 min). Shorten it to 10, or keep it as the long order?</div>
+<div class="dec"><b>3. At most 2 new organs per organ stage</b> (Tendril Roots and levelling don't count). This is what keeps every organ stage a choice. Keep it, or loosen it to 3?</div>
+<div class="dec"><b>4. How big the court is.</b> From wave 6, one consort or matron each wave, then one more every two waves, at most 4. Keep it?</div>
+<p class="cap">For an engineer or an AI: DESIGN.md has the section "The world unfolds; round one is losable (Nov 23 2026)", and HANDOFF.md has the pop-up, the picker and the hover card. The measurements are in tools/measure (loop, directives, difficulty, sacrifice).</p>
+</main></body></html>

@@ -936,3 +936,11 @@ body.in-ship #topbar, body.in-ship #botbar { visibility: hidden; }
 #inspect-stats .is-grid .is-hits, #inspect-stats .is-grid .is-feeds { grid-column: 1 / -1; }
 #inspect-stats .is-grid .up { color: #3f6a22; }
 #inspect-stats .is-grid .down { color: #8a2c18; }
+
+/* The organ stage's head row with the shelf news in it (Nov 23 2026): the chyme note had been squeezed to one word a
+   line and TO THE SURFACE pushed off the window. The row wraps, the note keeps a readable width, the tally and the
+   shelf news share what is left, and the button stays on the row's right. */
+#under-head { flex-wrap: wrap; row-gap: 8px; }
+#under-note { min-width: 26ch; flex: 1 1 26ch; }
+#under-meat { flex: 0 1 auto; min-width: 0; }
+#under-meat .um-tally, #under-meat .um-news { flex: 0 1 auto; min-width: 170px; }

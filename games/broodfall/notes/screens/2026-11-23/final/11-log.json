@@ -1,0 +1,229 @@
+{
+ "log": [
+  {
+   "wave": 0,
+   "setup": {
+    "phase": "growth",
+    "wave": 0,
+    "outcome": "playing",
+    "meat": {
+     "war": 30,
+     "science": 0,
+     "royal": 0
+    },
+    "core": 1500,
+    "limbs": 0,
+    "organs": 0,
+    "hand": [
+     "spitter",
+     "lasher",
+     "lasher",
+     "spitter"
+    ],
+    "draft": false,
+    "chyme": 0,
+    "uiPhase": "view-iso royal-closed"
+   },
+   "built": {
+    "n": 2,
+    "log": [
+     "spitter",
+     "spitter"
+    ]
+   }
+  },
+  {
+   "mid": 1,
+   "st": {
+    "phase": "siege",
+    "wave": 1,
+    "outcome": "playing",
+    "meat": {
+     "war": 31,
+     "science": 0,
+     "royal": 0
+    },
+    "core": 1258,
+    "limbs": 2,
+    "organs": 0,
+    "hand": [
+     "lasher",
+     "lasher",
+     "lasher",
+     "spine"
+    ],
+    "draft": false,
+    "chyme": 16,
+    "uiPhase": "view-iso royal-closed"
+   }
+  },
+  {
+   "wave": 1,
+   "setup": {
+    "phase": "growth",
+    "wave": 1,
+    "outcome": "playing",
+    "meat": {
+     "war": 0,
+     "science": 0,
+     "royal": 0
+    },
+    "core": 1074,
+    "limbs": 4,
+    "organs": 0,
+    "hand": [
+     "lasher",
+     "lasher",
+     "spine",
+     "spitter"
+    ],
+    "draft": false,
+    "chyme": 55,
+    "uiPhase": "view-iso royal-closed"
+   },
+   "built": {
+    "n": 0,
+    "log": []
+   }
+  },
+  {
+   "mid": 2,
+   "st": {
+    "phase": "siege",
+    "wave": 2,
+    "outcome": "playing",
+    "meat": {
+     "war": 67,
+     "science": 0,
+     "royal": 0
+    },
+    "core": 1074,
+    "limbs": 3,
+    "organs": 0,
+    "hand": [
+     "lasher",
+     "lasher",
+     "spine",
+     "spitter"
+    ],
+    "draft": false,
+    "chyme": 95,
+    "uiPhase": "view-iso royal-closed"
+   }
+  },
+  {
+   "wave": 2,
+   "setup": {
+    "phase": "growth",
+    "wave": 2,
+    "outcome": "playing",
+    "meat": {
+     "war": 11,
+     "science": 12,
+     "royal": 0
+    },
+    "core": 1004,
+    "limbs": 7,
+    "organs": 0,
+    "hand": [
+     "spine",
+     "spitter",
+     "spitter",
+     "spitter"
+    ],
+    "draft": false,
+    "chyme": 139,
+    "uiPhase": "view-iso royal-closed"
+   },
+   "built": {
+    "n": 0,
+    "log": []
+   }
+  },
+  {
+   "wave": 3,
+   "draft": {
+    "ok": true
+   }
+  },
+  {
+   "wave": 3,
+   "setup": {
+    "phase": "growth",
+    "wave": 3,
+    "outcome": "playing",
+    "meat": {
+     "war": 1,
+     "science": 0,
+     "royal": 0
+    },
+    "core": 1004,
+    "limbs": 13,
+    "organs": 0,
+    "hand": [
+     "spine",
+     "spitter",
+     "spine",
+     "spitter"
+    ],
+    "draft": false,
+    "chyme": 227,
+    "uiPhase": "view-iso royal-closed"
+   },
+   "built": {
+    "n": 0,
+    "log": []
+   }
+  },
+  {
+   "mid": 4,
+   "st": {
+    "phase": "siege",
+    "wave": 4,
+    "outcome": "lost",
+    "meat": {
+     "war": 53,
+     "science": 0,
+     "royal": 0
+    },
+    "core": -2,
+    "limbs": 10,
+    "organs": 0,
+    "hand": [
+     "spine",
+     "spitter",
+     "spine",
+     "spitter"
+    ],
+    "draft": false,
+    "chyme": 247,
+    "uiPhase": "view-iso royal-closed"
+   }
+  },
+  {
+   "end": {
+    "phase": "siege",
+    "wave": 4,
+    "outcome": "lost",
+    "meat": {
+     "war": 53,
+     "science": 0,
+     "royal": 0
+    },
+    "core": -2,
+    "limbs": 10,
+    "organs": 0,
+    "hand": [
+     "spine",
+     "spitter",
+     "spine",
+     "spitter"
+    ],
+    "draft": false,
+    "chyme": 247,
+    "uiPhase": "view-iso royal-closed"
+   }
+  }
+ ],
+ "errors": []
+}
