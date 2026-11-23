@@ -7,8 +7,8 @@
  *   unfold-organs-wN.png   the organ stage as it opens after wave N (the head row: the tally, NEW ON THE SHELF, the knit count)
  *   unfold-banner-*.png    each new layer's banner on the board as it is told (the science caste, the court)
  *   unfold-feed-wN.png     the feed as wave N starts (leftover science rendered into chyme)
- * Prints a line a wave. The script hands the body extra war meat before each wave (EXTRA_WAR) so a scripted, naive
- * placement lives long enough to see wave 8; the numbers that matter are measured in tools/measure, not here.
+ * Prints a line a wave. The script hands the body extra war meat before each wave (EXTRA_WAR) and keeps the core at 80%
+ * (HOLD_CORE) so a scripted, naive placement lives to see wave 8; the numbers that matter are measured in tools/measure.
  * Usage: node tools/shot-unfold.mjs <base url of a running dev server> <output folder> [seed] [waves]
  */
 import { mkdirSync } from 'node:fs';
@@ -19,7 +19,9 @@ const base = process.argv[2] || 'http://localhost:5321';
 const out = process.argv[3] || 'tools/screenshots';
 const seed = Number(process.argv[4] || 7);
 const WAVES = Number(process.argv[5] || 8);
-const EXTRA_WAR = 40;
+const EXTRA_WAR = 80;
+// The core is topped up while the waves are stepped: this walk is for SEEING each layer open by wave 8, not for balance.
+const HOLD_CORE = true;
 const ORGANS_AT = new Set([1, 2, 3, 4, 5, 6, 8]);
 mkdirSync(out, { recursive: true });
 const browser = await chromium.launch({ args: ['--mute-audio', '--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] });
@@ -40,8 +42,8 @@ async function placeLimbs() {
       let placed = false;
       for (let k = 0; k < s.hand.length && !placed; k++) {
         const g = s.cellCenter(s.incomingGates[0] ?? s.gates[0]);
-        const cells = b.buildableCells(600).sort((a, c) => { const pa = s.cellCenter(a), pc = s.cellCenter(c); return Math.hypot(pa.x - g.x, pa.y - g.y) - Math.hypot(pc.x - g.x, pc.y - g.y); });
-        for (const cell of cells.slice(0, 80)) { if (b.play({ kind: 'build', cardIndex: k, cell }).ok) { placed = true; n++; break; } }
+        const cells = b.buildableCells(3000).sort((a, c) => { const pa = s.cellCenter(a), pc = s.cellCenter(c); return Math.hypot(pa.x - g.x, pa.y - g.y) - Math.hypot(pc.x - g.x, pc.y - g.y); });
+        for (const cell of cells) { if (b.play({ kind: 'build', cardIndex: k, cell }).ok) { placed = true; n++; break; } }
       }
       if (!placed) break;
     }
@@ -66,8 +68,8 @@ async function wave(n) {
   await catchBanner();
   const feed = await page.evaluate(() => [...document.querySelectorAll('#feed .feed-item')].map((e) => e.textContent).filter((t) => /rendered into/.test(t)));
   if (feed.length) { await shot(`feed-w${n}`); log.push(`  feed: ${feed[0]}`); }
-  for (let i = 0; i < 400; i++) {
-    await page.evaluate(() => window.broodfall.step(20));
+  for (let i = 0; i < 1600; i++) {
+    await page.evaluate((hold) => { const s = window.broodfall.sim; window.broodfall.step(5); if (hold && s.coreHp > 0 && s.coreHp < s.coreMaxHp * 0.8) s.coreHp = s.coreMaxHp * 0.8; }, HOLD_CORE);
     await catchBanner();
     const s = await page.evaluate(() => ({ p: window.broodfall.sim.phase, o: window.broodfall.sim.outcome }));
     if (s.p !== 'siege' || s.o !== 'playing') break;

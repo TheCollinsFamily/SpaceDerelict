@@ -118,7 +118,8 @@ software already says "specimens digested"). Glyph ◆, colour bile-gold (`--chy
 - **Every wave cleared** pays a ration of 38 (`chymeRationBase`, x the entrances' wager: +25%/+50% at 2/3 gates). This
   is the old clearing wage, which was war meat (22 + 4/wave) and is now chyme. It is the floor: a bad wave still buys an
   organ.
-- Nothing else renders chyme: meat left unspent, a thief's returned loot, a deposit's payout, a shelter's share and the
+- **Science left unspent when a wave starts** is rendered into chyme, 3 to 1 (Nov 23 2026; "The world unfolds" below).
+- Nothing else renders chyme: war meat left unspent, a thief's returned loot, a deposit's payout, a shelter's share and the
   last mission's shelter ration are meat for limbs, not chyme. `tests/chyme.test.ts` holds "a hoarder and a spender earn
   the same chyme".
 - **Seen accruing.** The top bar has a ◆ CHYME counter beside WAR/SCI/ROYAL; it pulses as it grows and shows "+N this
@@ -278,6 +279,78 @@ default), on the spot touching the most theme organs (and their limbs). `ORG_RUM
 **COLLINS:** (1) the name; (2) the cap (12 a wave x level) and price (60); (3) whether a heart on the Rumen should count
 double or not at all.
 
+### The world unfolds; round one is losable (Collins, Nov 23 2026 — BUILT Nov 23)
+Collins, approving the loop review (`notes/screens/2026-11-23/loop/loop-review.html`): **"remember you want an UNFOLDING
+game world, not dropping everything (science, royals etc.) at once"** and **"round one should be losable but still
+something of a tutorial"**. The review had found, with the scripted player: a skirmish order was a hidden coin flip of
+length (harvest ended in wave 5 in 4 minutes, hold-12 took 20); the bot won 30 of 30 and waves 2-5 never touched the
+core; the organ stage offered all 28 organs from wave 1 and the bot owned every one it wanted by wave 9; 60-86% of the
+science earned in waves 9-11 spoiled; royal meat was about 5 a run, all from one event in wave 8. A skirmish now opens
+one thing at a time (`Sim.unfolds`: a skirmish, never the campaign, a defence or the last mission; a save from before it
+replays with it off, `RunSave.v` 3).
+
+**What opens when (skirmish, every order).**
+
+| After / in wave | What opens | How it is told |
+|---|---|---|
+| start | the first organs: Gut, Bone Forge, Mucus Lattice, Venom Sac, Auxiliary Heart, Tendril Root | the organ stage's head row: "NEXT ON THE SHELF after wave 2" |
+| wave 2 (in it) | the science caste (unchanged: from the first evolution, wave 2 at the earliest) | banner "THE SCIENCE CASTE COMES — RESEARCHERS STEAL LIMBS / EAT THEM FOR SCIENCE MEAT: IT EVOLVES YOUR LIMBS" (the run's first study party) |
+| after wave 2 | the creep organs: Spore Bladder, Spore Cyst, Pacemaker, Mire Gland; Nerve Cluster, Brood Womb | head row "NEW ON THE SHELF: THE CREEP ORGANS", NEW on the cards, a feed line |
+| after wave 3 (the first district draft) | zones and the Rumen: Brain Node, Pheromone Gland, Atrophy Gland, Rumen, Scaffold Gland, Seeding Gland | the same |
+| after wave 4 | the engine themes: Marrow Vault, Resonance Chamber; Catapult, Runner, Digestive Lining, Swelling Sac, Budding Gland | the same |
+| after wave 5 | units you command: Infestor Cyst, Harrier Gland, Mule Sac | the same |
+| wave 6 | THE COURT: a detachment (a consort or a veil matron) marches with every wave, one more every two waves, at most 4; the ROYAL counter and the ROYAL DECREES box appear on the bar | banner "THE COURT TAKES THE FIELD — A CONSORT MARCHES WITH THE WAVE / EAT THE COURT FOR ROYAL MEAT: IT BUYS ROYAL DECREES" |
+| wave 8-9 | the royal herself (royalThreat 380; a royal hunt's guarantee stays wave 8) | "THE ROYAL TAKES THE FIELD" (as before) |
+
+The enemy's ranks climb the same way: in a skirmish wave 2 is at least tier 1 (the militia) and wave 3 at least tier 2
+(the army) (`Sim.tierFor`, `BALANCE.tierLadder`), then the threat takes over: the air (tier 3+) in wave 4, the shield wall
+in wave 5, everything they have from wave 8 (`tier6Threat` 320).
+
+**The organ shelf and the knit.** Organs not on the shelf yet stand dimmed in the tray saying "OPENS AFTER WAVE N", so the
+next block is always in sight. Between waves the body knits at most **2 new organs** (`organsPerStage`); a Tendril Root
+is tissue and levels are free of it. The head row says "KNIT 1 / 2 NEW ORGANS THIS STAGE", and a full stage's cards say
+"KNIT 2/2 THIS STAGE". So a late stage is a choice (which two, or which theme to level), not a shopping list. Content:
+`ORGAN_SHELF` in `content/underground.ts`. The scripted player wants only what is on the shelf.
+
+**Science left unspent becomes chyme.** When a wave starts, the science that would spoil is rendered into chyme, 3 science
+to 1 (`scienceChymeRate`); war still spoils. It is told in the feed ("15 unspent science rendered into +5 ◆ chyme") and in
+the next tally ("5 from leftover science"). `tests/chyme.test.ts` held "a hoarder and a spender earn the same chyme"; it now
+holds that for WAR, and a new case holds the science rule: the change is deliberate, because a researcher eaten late was
+worth nothing, and 3 to 1 is too poor to make hoarding science better than evolving with it.
+
+**Round one: losable, still a tutorial.** The meteor's own bite matures with the run (`coreDpsStart` 8, +3 a wave cleared,
+up to the old 24): at 24 from the first second a body that built nothing lived to wave 5. The first rows carry more bodies
+(tier 0: 12 responders and 6 skitterlings, was 8 responders; tier 1: 10 responders, 14 militia, 2 soldiers, 10
+skitterlings; tier 2: 16 militia, 8 soldiers, 3 splitters, 8 skitterlings), they come 4 to a squad every 2.5 s (3 every
+3.1 s), and a tier is 15 threat (21). More bodies and higher types only: no hit point was added to anyone.
+
+**Measured** (hold-12, one gate, 10 seeds; `tools/measure/difficulty.measure.ts`, `loop.measure.ts`, `directives.measure.ts`):
+
+| | before | after |
+|---|---|---|
+| scripted (naive chokepoint) player wins | 10/10 (30/30 over the three orders) | **7/10** (losses in waves 6, 6, 8) |
+| its core after wave 1 | 94-100% | 91-100% (the tutorial: it clears wave 1 comfortably) |
+| its mean core damage, waves 1-5 | 9 / 0 / 0 / 0 / 0 | 14 / 0 / 0 / 109 / 381 |
+| a body that builds nothing | lost in wave 5, every seed | **lost in wave 1 (2 seeds) or 2 (8)** |
+| limbs put on random legal cells | lost in waves 5-8; core 93-100% after wave 1 | lost in wave 2 (3 seeds), 3 (4), 4 (3); wave-1 damage up to 1,275 |
+| placement guardrail (8 seeds) | passes | passes: smart 6/8 wins, outcome flips smart 6, random 0 |
+| order lengths (wins end in wave) | hold 12 · royal 8 · harvest 5 (4.2 min) | hold 12 (15.8 min) · royal 8 (9.9 min) · harvest 7-11, mean 7.8 (10.4 min; quota 900, was 80) |
+| organs owned when wave n starts (2..12) | all 24 wanted by wave 9 | 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21 |
+| chyme a wave late (9-11) / bank | ~200 / spent on levels | 188-264 / 46-95 kept: 2 organs and 1.3-1.6 levels a stage |
+| science spoiled a wave late | 115-214 | about 1 (the rest evolved, or rendered: 2-84 chyme a wave, ~180 a run) |
+| royal meat a run | ~5-6, all in wave 8 | ~21, from wave 6 on (1, 1, 7, 2, 3, 3, 4) |
+
+The campaign shares the core's maturing bite, the first rows and the squads (not the shelf, the knit, the court's
+detachment or the rank ladder). Mission 1 (hold 5, war only), the scripted player, 10 seeds (`tools/measure/mission1.measure.ts`):
+10/10 won before and after; the core ends at 47-94% (was 94-100%), 83-100% after wave 1.
+
+Waves 2 and 3 still do no damage to the chokepoint player (it kills the militia and the army at its chokepoint); they do
+to a player who builds blind or not at all, which is what makes round one a lesson and not a gate.
+
+**COLLINS:** (1) hold-12 still runs 12 waves (about 16 min) where the royal and harvest orders now run about 8 (10 min):
+shorten hold to 10, or keep it as the long order? (2) the knit limit of 2 organs a stage; (3) the court's detachment
+(a consort or matron a wave from wave 6, one more every two waves, at most 4).
+
 ### Creep: the core of the organ game (Collins, Sep 28 2026)
 Collins: "creep nodes should be free but produced at intervals by special organs;
 some organ should let you start the game with them, some decrease the interval,
@@ -398,7 +471,7 @@ and meat being digitisation."** The creep is how the asset absorbs, that is digi
   who builds at the edge and does not push creep out after his kills will leave meat lying.
 
 ### The pressure curve (why waves stay scary)
-**Escalation is MORE enemies and HIGHER TYPES — never stat inflation. Collins (Sep 26 2026): "enemies should never harden per wave... hardening is boring." A rejected +HP-per-wave mechanic is explicitly out.** Each tier introduces a new VERB:
+**(Nov 23 2026: a skirmish climbs a rank a wave at the start and the first rows carry more bodies, so round one can be lost; "The world unfolds".)** **Escalation is MORE enemies and HIGHER TYPES — never stat inflation. Collins (Sep 26 2026): "enemies should never harden per wave... hardening is boring." A rejected +HP-per-wave mechanic is explicitly out.** Each tier introduces a new VERB:
 - tier 3 **fliers**: wing straight over blocks and walls to the core — spine walls and channel-side placement don't answer them; airspace lines from gate to core must be covered.
 - tier 4 **sappers**: climb blocks and chew towers directly — perches are not safe.
 - tier 5 **phalanx**: shield-wall armor caps damage per hit — big single hits are wasted, rapid fire shreds it.
@@ -1187,7 +1260,7 @@ would get a 'doom effect'" if towers had one picture.
 **Collins (Sep 26 2026): the win is a wave count or a specific quest objective — never a biomass bar.** Each deployment carries a directive from command, seeded per run (or chosen by the mission structure later):
 - **hold** — survive the local response for N waves (the default order)
 - **royal** — destroy the royal (guaranteed to take the field by a set wave)
-- **harvest** — bank a science-sample quota
+- **harvest** — bank a science-sample quota (900 in a skirmish since Nov 23 2026, was 80: it ended in wave 5 while hold-12 ran 20 minutes; now it ends about wave 8, as a royal hunt does. "The world unfolds")
 Biomass stays as the growth economy (body size, royal surge), not the goal. Lose = core dead. The earlier "sporulation mass" win was an AI suggestion and is rejected.
 
 ### Run openings

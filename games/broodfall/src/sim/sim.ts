@@ -3280,7 +3280,8 @@ export class Sim {
       counts[kind as EnemyKind] = (counts[kind as EnemyKind] ?? 0) + (n ?? 0);
       waveRisk += (n ?? 0) * enemySpec(kind as EnemyKind).risk;
     }
-    if (Object.keys(det).length && !this.courtOpenedTold) { this.courtOpenedTold = true; this.events.push({ kind: 'court-opened', wave: this.waveNumber }); }
+    const courtNews = Object.keys(det).length > 0 && !this.courtOpenedTold;
+    if (courtNews) this.courtOpenedTold = true;
     // Mating musk: every pair that paired off last wave is one more body now (war bodies: not while the Host is late).
     const born = court ? 0 : Math.floor(this.mateBacklog);
     this.mateBacklog -= born;
@@ -3305,6 +3306,8 @@ export class Sim {
     const late = this.cfg.lateHost;
     this.events.push({ kind: 'wave-start', tier: this.tierFor(this.waveNumber), wave: this.waveNumber, counts, sides, risk: waveRisk, ...(court ? { court: true, hostIn: late!.turns - this.waveNumber } : {}) });
     if (late && this.waveNumber === late.turns + 1) this.events.push({ kind: 'host-arrived' });
+    // After the wave's own news, so its banner is the one left standing.
+    if (courtNews) this.events.push({ kind: 'court-opened', wave: this.waveNumber });
   }
 
   // ---------- tick ----------
