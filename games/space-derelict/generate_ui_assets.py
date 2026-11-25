@@ -9,7 +9,9 @@ assets are backgrounds and textures that render inside the CRT "screen".
 """
 import requests, os, time
 
-API_KEY = os.environ.get("RFAB_API_KEY", "rfab_SHK-pdCAXXkptzMYVslPYP7jcPk2grwXfVupZkXsi28")
+API_KEY = os.environ.get("RFAB_API_KEY")
+if not API_KEY:
+    raise SystemExit("RFAB_API_KEY is not set. Set it in the environment, then run this script again.")
 BASE = os.environ.get("RFAB_BASE", "http://localhost:3000")
 HEADERS = {"X-API-Key": API_KEY, "Content-Type": "application/json"}
 OUT = os.path.join(os.path.dirname(__file__), "assets", "ui")

@@ -1,9 +1,12 @@
 """Generate faction emblems and contract card illustrations."""
+import os
 import requests
 import time
 from pathlib import Path
 
-API_KEY = "rfab_SHK-pdCAXXkptzMYVslPYP7jcPk2grwXfVupZkXsi28"
+API_KEY = os.environ.get("RFAB_API_KEY")
+if not API_KEY:
+    raise SystemExit("RFAB_API_KEY is not set. Set it in the environment, then run this script again.")
 BASE_URL = "http://localhost:3000"
 HEADERS = {"X-API-Key": API_KEY, "Content-Type": "application/json"}
 
