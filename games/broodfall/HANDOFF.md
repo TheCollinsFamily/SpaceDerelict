@@ -1777,10 +1777,16 @@ RFAB_API_BASE=http://localhost:3011 RFAB_CONNECT_JWT=<tester jwt> node tools/sho
     `public/art/intro/quarters.webp`, `partner.webp`, the `quarters`/`partner` keys of `intro.json`). The room picture keeps
     what matters in its LEFT third (`src/ship.css` shows a room from its left edge; the card covers the rest). Beat:
     `node tools/shot-quarters.mjs`. Collins's call: whether Maren Oste looks like the woman he had in mind.
-10. **The API key in the public repo.** `games/space-derelict/generate_ui_assets.py`,
-   `generate_event_assets.py` and `_gen_emblems_contracts.py` carry a hard-coded RFab key.
-   It is in the history of a PUBLIC repo: treat it as leaked and rotate it. Removing it
-   from the files does not remove it from the history.
+10. **The RFab keys in the public repo.** The files are clean since commit `842d1159`:
+   `games/space-derelict/generate_ui_assets.py`, `generate_event_assets.py` and
+   `_gen_emblems_contracts.py` read `RFAB_API_KEY` and hold no key. The history was NOT
+   rewritten, so two keys stay readable on GitHub (named here only by the start of their SHA-256):
+   - Key A (`a99477b4`), hard-coded in those three scripts until `842d1159`. Checked Nov 24 2026:
+     not in the production or local database, and production answers 401. Dead.
+   - Key B (`37565981`), only in the history (commits `d5196b49`, `1091b907`, Jun 6 2026). It
+     was the owner's `RFAB_API_KEY` (key id `2fd9f1b0`, named "dddd"), with full owner admin
+     powers. Revoked Nov 24 2026 (23:10 US Eastern) in rfab.ai Settings, API Keys; production answers 401
+     for it since. A new key "Desktop agents" (SHA-256 `583309f2`) replaced it in `RFAB_API_KEY` on the desktop.
 
 ## Working with Collins (hard-won)
 
