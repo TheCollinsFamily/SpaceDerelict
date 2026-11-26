@@ -7,11 +7,12 @@
 import { BALANCE as B } from '../../content/data';
 
 /** What the readout says, or '' for a limb that reaches nothing (a producer, a wall). */
-export function reachText(st: { range: number; groundRange: number; height: number }): string {
+export function reachText(st: { range: number; groundRange: number; height: number }, cellPx?: number): string {
   if (!(st.range > 0) || st.range >= 1000) return '';
   const pct = Math.round(B.heightRangeBonus * (st.height - 1) * 100);
   const lift = st.height > 1 ? ` (+${pct}% height, level ${st.height})` : ` (level 1: no height bonus, +${Math.round(B.heightRangeBonus * 100)}% a level higher)`;
-  return `reach ${Math.round(st.range)}${lift}`;
+  // In board cells when the cell size is known, like the limb stat card (Nov 26 2026: it said "reach 95" beside "3.7 cells").
+  return `reach ${cellPx ? `${(st.range / cellPx).toFixed(1)} cells` : Math.round(st.range)}${lift}`;
 }
 
 let el: HTMLDivElement | null = null;

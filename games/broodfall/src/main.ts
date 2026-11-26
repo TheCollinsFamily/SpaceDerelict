@@ -13,7 +13,7 @@ import { limbCard as limbStatCard } from './ui/limbStats';
 import { hideLimbCard, limbCardShowing, showLimbCard } from './ui/limbCard';
 import { IsoRenderer } from './render/isoRender';
 import { BoardArtSet, artUrl, loadManifest, pickBiome } from './render/art';
-import { Hud, PIP_DESC } from './ui/hud';
+import { Hud, PIP_DESC, sideWords } from './ui/hud';
 import { DecreeBox } from './ui/decrees';
 import { UndergroundScreen } from './ui/underground';
 import { CampaignUi } from './ui/campaignUi';
@@ -391,6 +391,8 @@ let hoverBurrow = false;
 function sacrificeOnly(i: number): Tower[] {
   const card = sim.hand[i];
   if (!card || card.free) return [];
+  // Mission 1 does not point at eating before it teaches it (as the cards: src/ui/hud.ts eatTaught).
+  if (FIRST && !document.body.classList.contains('m1-cannibal') && sim.wavesCleared < 1) return [];
   return sim.sacrificeDonorsFor(card.family === 'spine' ? sim.wallCost(1) : towerSpec(card.family).cost);
 }
 
@@ -444,13 +446,15 @@ function updateHint(): void {
     const fam = sim.hand[selectedCard]?.family;
     const span = fam && isMultiCell(towerSpec(fam)) ? towerSpec(fam) : undefined;
     const turn = ' · RIGHT-CLICK or R turns it a quarter · Esc cancels';
+    // "Feed it in" only when a limb stands to eat, and in mission 1 only once eating is revealed (Nov 26 2026 polish).
+    const canEat = sim.towers.some((t) => t.family !== 'tap') && (!FIRST || document.body.classList.contains('m1-cannibal'));
     hud.setHint(selectedIsDirectional()
       ? `place it — it faces ${placeFacing ?? (fam && towerSpec(fam).directional ? 'the nearest gate' : 'the way it fits')}${turn}`
       : span
         ? `a BIG limb: it needs ${footprintName(span)} of one flat creeped roof${placeFacing ? ` · faces ${placeFacing}` : ''}${turn} · ${loadSettings().keys.turnLeft.toUpperCase()} and ${loadSettings().keys.turnRight.toUpperCase()} turn the view`
       : fam === 'spine' || fam === 'swamp'
         ? `plug a street — the swarm must go through it${turn}`
-        : `place on a creeped block by a street — higher roofs reach further (+10% a level)${placeFacing ? ` · faces ${placeFacing}` : ''}${turn} — or click one of your limbs to feed it in`);
+        : `place on a creeped block by a street — higher roofs reach further (+10% a level)${placeFacing ? ` · faces ${placeFacing}` : ''}${turn}${canEat ? ' — or click one of your limbs to feed it in' : ''}`);
   } else if (FIRST && !AUTO && coachText()) {
     hud.setHint(coachText());
   } else {
@@ -553,8 +557,8 @@ function handleEvents(events: SimEvent[]): void {
   for (const e of events) {
     if (e.kind === 'wave-start') banner(e.court
       // The same count as the order on the HUD: the turns left with this one in them (`hostIn` is those after it).
-      ? `WAVE ${e.wave} — THE COURT AND THE SCIENCE CASTE, FROM ${e.sides} · THE HOST IN ${(e.hostIn ?? 0) + 1} TURN${e.hostIn ? 'S' : ''}`
-      : `WAVE ${e.wave} — ASSAULT FROM ${e.sides}`);
+      ? `WAVE ${e.wave} — THE COURT AND THE SCIENCE CASTE, FROM THE ${sideWords(e.sides)} · THE HOST IN ${(e.hostIn ?? 0) + 1} TURN${e.hostIn ? 'S' : ''}`
+      : `WAVE ${e.wave} — ASSAULT FROM THE ${sideWords(e.sides)}`);
     // THE LAST MISSION (Oct 4 2026): the shelter that is his from the start; the Host's arrival.
     if (e.kind === 'shelter-start') banner(e.taken ? 'THE SHELTER BY THE BODY IS YOURS — PROTECT IT\nIT IS YOUR WAR MEAT UNTIL THE HOST ARRIVES' : 'A SHELTER STANDS BY THE BODY — AN INFESTOR CAN TAKE IT');
     if (e.kind === 'host-arrived') banner('THE HOST HAS ARRIVED — EVERYTHING THEY HAVE');
@@ -1757,7 +1761,7 @@ async function boot(): Promise<void> {
     placePreview(cell);
     const pv = renderer.preview as PlacementPreview | null;
     showReachTip(ev.clientX, ev.clientY, pv?.family
-      ? reachText(sim.previewStats(pv.family, pv.cells ?? [pv.cell], pv.facing, sim.pendingPips)) : '');
+      ? reachText(sim.previewStats(pv.family, pv.cells ?? [pv.cell], pv.facing, sim.pendingPips), sim.cfg.cellPx) : '');
   });
 
   const callEarlyBtn = document.getElementById('call-early')! as HTMLButtonElement;

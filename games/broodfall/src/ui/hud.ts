@@ -80,7 +80,7 @@ const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: stri
     ? { text: `internal structure grown: ${e.organ}`, cls: '' }
     : { text: '', cls: '' },
   'wave-start': (e) => e.kind === 'wave-start'
-    ? { text: `assault from ${e.sides} — tier ${e.tier}`, cls: 'hot' }
+    ? { text: `assault from the ${sideWords(e.sides).toLowerCase()} — tier ${e.tier}`, cls: 'hot' }
     : { text: '', cls: '' },
   'researchers-arrive': () => ({ text: 'curious specimens inbound', cls: 'sci' }),
   'clot-hurled': () => ({ text: 'growth medium deployed downrange', cls: '' }),
@@ -172,6 +172,13 @@ export interface HudCallbacks {
   onEvolve(towerId: number, choice: UpgradeChoice): void;
   /** A royal decree bought on a limb (its panel): the crown. */
   onCrown(towerId: number): void;
+}
+
+/** "S" / "N+E" (Sim.gateSide letters) as words: "SOUTH", "NORTH AND EAST". A lone letter read like a typo (Nov 26 2026). */
+export function sideWords(sides: string): string {
+  const name: Record<string, string> = { N: 'NORTH', S: 'SOUTH', E: 'EAST', W: 'WEST' };
+  const parts = sides.split('+').map((s) => name[s.trim()] ?? s.trim()).filter(Boolean);
+  return parts.length > 1 ? `${parts.slice(0, -1).join(', ')} AND ${parts[parts.length - 1]}` : parts[0] ?? sides;
 }
 
 export class Hud {
@@ -292,7 +299,16 @@ export class Hud {
 
   setHint(text: string): void {
     this.el.hint.textContent = text;
+    // A hint of two or three lines grows upward: the view buttons above it read its height (--hint-h) and keep clear (Nov 26 2026).
+    if (!this.hintWatched && typeof ResizeObserver !== 'undefined') {
+      this.hintWatched = true;
+      const hint = this.el.hint;
+      new ResizeObserver(() => {
+        hint.parentElement?.style.setProperty('--hint-h', `${hint.offsetHeight}px`);
+      }).observe(hint);
+    }
   }
+  private hintWatched = false;
 
   pushEvents(events: SimEvent[]): void {
     for (const e of events) {
@@ -631,7 +647,7 @@ export class Hud {
     this.el.phaseName.textContent = sim.phase === 'draft'
       ? 'CHOOSE A DISTRICT'
       : sim.phase === 'growth'
-        ? `ASSAULT FORMING: ${sides}`
+        ? `ASSAULT FORMING: ${sides === '?' ? '?' : sideWords(sides)}`
         : 'SIEGE';
     this.el.phaseName.classList.toggle('siege', sim.phase === 'siege');
     const next = sim.phase === 'growth' && !sim.waveIntelHidden
@@ -655,7 +671,9 @@ export class Hud {
     this.el.coreFill.style.background = coreFrac > 0.4 ? 'var(--ok)' : 'var(--accent)';
 
     // Cards: re-render only when the hand or affordability changes.
-    const payState = (c: (typeof sim.hand)[number]) => (c.free || sim.canAfford(towerSpec(c.family).cost) ? 1 : sim.sacrificeDonorsFor(towerSpec(c.family).cost).length ? 2 : 0);
+    // Mission 1 shows EAT A LIMB on a card only once it teaches eating (the explainer's own rule: revealed, or wave 1 cleared). Nov 26 2026.
+    const eatTaught = !document.body.classList.contains('first-mission') || document.body.classList.contains('m1-cannibal') || sim.wavesCleared >= 1;
+    const payState = (c: (typeof sim.hand)[number]) => (c.free || sim.canAfford(towerSpec(c.family).cost) ? 1 : eatTaught && sim.sacrificeDonorsFor(towerSpec(c.family).cost).length ? 2 : 0);
     const handKey = sim.hand.map((c) => `${c.id}:${payState(c)}`).join(',')
       + `|${this.selectedCard}`;
     if (handKey !== this.lastHandKey) {
@@ -666,7 +684,7 @@ export class Hud {
         const div = document.createElement('div');
         const affordable = !!card.free || sim.canAfford(spec.cost);
         // Not in the bank, but eating one of your limbs would pay for it: its own colour, not the grey of "cannot".
-        const donors = affordable ? [] : sim.sacrificeDonorsFor(spec.cost);
+        const donors = affordable || !eatTaught ? [] : sim.sacrificeDonorsFor(spec.cost);
         div.className = 'card'
           + (this.selectedCard === i ? ' selected' : '')
           + (affordable ? '' : donors.length ? ' by-sacrifice' : ' unaffordable');

@@ -398,7 +398,7 @@
   [data-hud="ship"] .organ-btn { min-width: 0; }
   [data-hud="ship"] .card { width: 108px; }
   [data-hud="ship"] #hint { max-width: calc(100% - 40px); }
-  [data-hud="ship"] #view-controls { bottom: 58px; }
+  [data-hud="ship"] #view-controls { bottom: max(58px, calc(var(--hint-h, 0px) + 16px)); }
   [data-hud="ship"] #feed { width: 210px; }
 }
 @media (max-width: 1050px) {

@@ -110,7 +110,7 @@ body.science-closed.royal-closed #inspect-castes, body.science-closed.royal-clos
 
 /* Turning and framing the isometric board. */
 /* Bottom left, above the hint line: the top left is where the inspect panel opens. */
-#view-controls { display: none; position: absolute; left: 10px; bottom: 44px; gap: 4px; align-items: center; z-index: 4; }
+#view-controls { display: none; position: absolute; left: 10px; bottom: max(44px, calc(var(--hint-h, 0px) + 16px)); gap: 4px; align-items: center; z-index: 4; }
 body.view-iso #view-controls { display: flex; }
 #view-controls button {
   background: rgba(20, 16, 12, 0.78); color: #e8dcb8; border: 1px solid rgba(184, 168, 120, 0.7);
