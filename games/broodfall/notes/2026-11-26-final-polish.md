@@ -69,9 +69,32 @@ third run on seed 11 bought a Venom Sac after wave 1 and had two Lashers and a S
 - C. Before wave 2 the top bar says "WAVE 1 · TIER 0" under "ASSAULT FORMING". It counts the waves done, but it
   reads as the wave that comes next.
 
+## The district draft (after wave 3), second session the same day
+
+More memory was free (11 GB). Skirmish seed 11 on the full art board, played two times to the wave 3 draft: a
+Lasher before wave 1, a Venom Sac after wave 1, a Spore Bladder after wave 2, limbs placed by real clicks.
+
+- The draft opens after wave 3 with three districts and what each gives (`09-draft-after-wave3.jpg`). Picking one
+  opens the placing panel. The board shows the green slot it fits, and a wrong slot says why ("A district already
+  stands here"). The district goes down by a click, and the organ stage follows. No console errors.
+- The Spore Bladder uncovers the "?" cell it touches ("ANCIENT ROYAL TOMB: +1 ROYAL POINT",
+  `13-organ-stage-bladder-and-tomb.jpg`). For about half a second after a buy, the new organ's cells are black while
+  its picture loads.
+- The "WAVE 3 CLEARED" banner fades out behind the draft for about 3 s. Not changed.
+
+10. **Fixed: the placing panel was khaki paper.** `#place-district` came on Nov 22, after the Sep 30 pass that made the
+    screens round the board dark glass. So in the ship HUD it was the one khaki panel between the dark draft and the
+    dark board (`10-place-district-before.jpg`). Fix: `src/ui/districtPlace.css`, a `[data-hud="ship"]` look with
+    the draft cards' glass, lines, font and white buttons. `?hud=classic` keeps the paper. After, seen in a new page
+    load: `11-place-district-after.jpg` (fits) and `12-place-district-after-wrong-slot.jpg` (does not fit).
+
+Not a game fault: a run that held 175 Chyme unspent and placed limbs far from the new district's street lost at wave 4.
+
+There is no cheat menu. For later passes, the test hook `window.broodfall.sim` can set `coreHp` and `meat.war` in a
+test page, which reaches the later screens faster. Screenshots from such a run are not a player's run.
+
 ## Not verified in this pass
 
-- The district draft (after wave 3): the memory guard closed the browser before wave 3.
 - The desktop launcher (`node tools/shot-desktop.mjs`): it loads the full game in Electron, which needs the same
   memory, and it opens a window on the screen.
 - Mission 2 and later, the win report, the ship after a run.

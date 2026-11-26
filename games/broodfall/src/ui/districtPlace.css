@@ -26,3 +26,24 @@ html.reduce-motion #place-district .pd-why.shake { animation: none; }
   background: var(--ink, #26200f); color: var(--panel, #b8a878); border: none; padding: 5px 10px; cursor: pointer;
 }
 #place-district button:hover { background: #3a3118; color: #fff; }
+
+/* The ship's console (playtest, Nov 26 2026): this panel came after the Sep 30 pass that made the screens round the
+   board dark glass (src/screens.css), so in the ship HUD it was still khaki paper between the dark draft and the dark
+   board. Dark glass, thin white lines and Bahnschrift, like the draft's cards; ?hud=classic keeps the paper. */
+[data-hud="ship"] #place-district {
+  background: var(--cs-sheen), var(--cs-scan), rgba(7, 9, 11, 0.94); border: 1px solid var(--cs-line-hi);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 0 40px rgba(0, 0, 0, 0.6); color: var(--cs-ink); font-family: var(--cs-font);
+  padding: 10px 14px 11px;
+}
+[data-hud="ship"] #place-district .pd-head { font: 300 15px/1.2 var(--cs-font); letter-spacing: 4px; text-transform: uppercase; color: #fff; }
+[data-hud="ship"] #place-district .pd-kicker { font: 400 10px/1.2 var(--cs-font); letter-spacing: 3px; color: var(--cs-dim); opacity: 1; }
+[data-hud="ship"] #place-district .pd-why { font: 400 12px/1.35 var(--cs-font); letter-spacing: 0.5px; border-radius: 0; background: rgba(255, 120, 90, 0.16); color: #ffd8c8; border-left: 2px solid #ff8a6a; }
+[data-hud="ship"] #place-district .pd-why.ok { background: rgba(140, 230, 120, 0.14); color: #dcffc8; border-left-color: #8ce678; }
+[data-hud="ship"] #place-district .pd-keys { font: 400 10px/1.4 var(--cs-font); letter-spacing: 0.5px; color: var(--cs-dim); opacity: 1; }
+[data-hud="ship"] #place-district .pd-keys b { color: var(--cs-ink); font-weight: 400; }
+[data-hud="ship"] #place-district .pd-green { color: #8ce678; }
+[data-hud="ship"] #place-district button {
+  font: 400 11px/1 var(--cs-font); letter-spacing: 3px; text-transform: uppercase; padding: 7px 12px;
+  background: var(--cs-ink); color: #07090b;
+}
+[data-hud="ship"] #place-district button:hover { background: #fff; color: #07090b; }
