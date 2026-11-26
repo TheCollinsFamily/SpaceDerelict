@@ -488,8 +488,12 @@ function startPlaylist(m: Manifest, id: string, fade: number, token: number): vo
   let st = lists.get(name);
   if (!st || !st.order.length) { st = { order: shuffle(ids), i: 0, pos: 0 }; lists.set(name, st); }
   const list = st;
-  const play = (fadeIn: number): void => {
-    if (token !== sceneToken || !ctx) return;
+  // The scene token is checked for the FIRST track only, which waits for the manifest (another scene may have come in
+  // meanwhile). A next track is the same playlist going on: build and assault share 'playlist:mission', and every switch
+  // between them moves the token on while this list keeps playing, so a token check here stopped the music at the end
+  // of the first song after any wave began (Bruno's playtest, Nov 26 2026). `loopNow !== p` in next() is its guard.
+  const play = (fadeIn: number, first = false): void => {
+    if ((first && token !== sceneToken) || !ctx) return;
     const track = list.order[list.i];
     const e = m.music[track];
     try {
@@ -517,7 +521,7 @@ function startPlaylist(m: Manifest, id: string, fade: number, token: number): vo
       note({ kind: 'music', id: track, played: true, why: id });
     } catch { note({ kind: 'music', id: track, played: false, why: 'cannot stream' }); }
   };
-  play(fade);
+  play(fade, true);
 }
 
 /** The scene the game is in; its loop is crossfaded in (a scene with none fades the music out). */
