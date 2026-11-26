@@ -3,47 +3,19 @@
  * real player gestures — select a card, place a tower, feed a donor into a second
  * build — asserting sim state after each. Exits non-zero on failure.
  */
-import { spawn, execSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { chromium } from '@playwright/test';
-
-/** The port the built game is served on: its own for every session that runs beats at the same time. */
-const PORT = Number(process.env.BROODFALL_PORT || 5199);
+import { PORT, startPreview, stopPreview, launchBrowser } from './check-harness.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const root = join(here, '..');
 const failures = [];
 const pass = (n) => console.log(`  PASS  ${n}`);
 const fail = (n, d) => { failures.push(n); console.log(`  FAIL  ${n} — ${d}`); };
 
-function freePort() {
-  try {
-    const out = execSync('netstat -ano', { encoding: 'utf8' });
-    const rows = out.split(String.fromCharCode(10));
-    for (const line of rows) {
-      const m = line.match(new RegExp(':' + PORT + '\\s+\\S+\\s+LISTENING\\s+(\\d+)'));
-      if (m) { try { execSync('taskkill /PID ' + m[1] + ' /T /F', { stdio: 'ignore' }); } catch {} }
-    }
-  } catch {}
-}
-
-function startPreview() {
-  freePort();
-  const child = spawn(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite', 'preview'], {
-    cwd: root, stdio: 'pipe', shell: process.platform === 'win32',
-  });
-  return new Promise((resolve, reject) => {
-    const t = setTimeout(() => reject(new Error('preview did not start')), 30000);
-    child.stdout.on('data', (d) => { if (String(d).includes('localhost')) { clearTimeout(t); resolve(child); } });
-    child.on('exit', (c) => reject(new Error(`preview exited (${c})`)));
-  });
-}
-
 let server; let browser;
 try {
   server = await startPreview();
-  browser = await chromium.launch();
+  browser = await launchBrowser();
   const page = await browser.newPage({ viewport: { width: 1500, height: 1100 } });
   await page.goto('http://localhost:' + PORT + '/?seed=7&autostart=1', { waitUntil: 'load' });
   await page.waitForSelector('#stage canvas');
@@ -438,11 +410,7 @@ try {
   fail('harness', err.message);
 } finally {
   await browser?.close();
-  if (server) {
-    if (process.platform === 'win32') {
-      try { execSync(`taskkill /PID ${server.pid} /T /F`, { stdio: 'ignore' }); } catch {}
-    } else server.kill();
-  }
+  stopPreview(server);
 }
 
 console.log(failures.length ? `\nINPUT CHECK FAILED: ${failures.join(', ')}` : '\nINPUT CHECK: all interactions verified.');

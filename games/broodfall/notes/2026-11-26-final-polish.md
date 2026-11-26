@@ -93,6 +93,39 @@ Not a game fault: a run that held 175 Chyme unspent and placed limbs far from th
 There is no cheat menu. For later passes, the test hook `window.broodfall.sim` can set `coreHp` and `meat.war` in a
 test page, which reaches the later screens faster. Screenshots from such a run are not a player's run.
 
+## Automated checks on 5f77eb8a (the newest game code)
+
+| Check | Result |
+|---|---|
+| `npm run build` | PASS |
+| `npx vitest run` | PASS, 89 files, 969 tests |
+| `npm run test:endgame` | PASS: a run won at 16.3 min, and the end screen showed |
+| `npm run test:input` | FAIL, 4 of 19 steps. The same 4 fail on 842d1159, before this polish. The check grows all ten organs before wave 1, but since Nov 23 (`5a838630`, the shelf) most organs open after wave 2, 3 or 4. The Sling and Lobber steps need those organs, and then the check stops at a `sim is not defined` error in its own code. The check is out of date, not the game. |
+| `npm run test:visual` | FAIL, 2 of 13: "sim advanced" (36 s of game time, the check wants 60) and "biomass accrues" (43, it wants 50). The run used the installed Chrome without a graphics card, so the game ran slower than 8x. On 842d1159 the check timed out at page load, so this pass does not show if these 2 are older. |
+
+These three browser checks first ran with a temporary Chrome fallback. They ran again on the new harness (next
+section) with Playwright's own Chromium 153.0.8010.12, and the results were the same: input 15 pass and 4 fail, visual
+11 pass and 2 fail (38 s of game time, biomass 46), endgame pass.
+
+### The browser checks are the same on every PC
+
+Bruno (Nov 26 2026): "make the three browser checks os-agnostic, defaulting to windows; that way both malcolm and
+myself execute the same test and ensure there's no drift due to test setup". The setup of all three checks is now in
+one file, `tools/check-harness.mjs`:
+
+- One browser on every PC: Playwright's own Chromium, the build that package-lock.json pins (1.63.0, Chromium
+  153.0.8010.12). No fallback to an installed Chrome. If it is missing, the check stops and gives the install command.
+- One server start: node runs `vite preview` itself, with no npx and no shell, and the check stops the whole process
+  tree at the end. Before, on Linux, the preview outlived the check and blocked the next check's port.
+- Windows is the reference: its netstat/taskkill path is unchanged. Off Windows, lsof (or fuser) and a process group
+  do the same work.
+- Each check prints a SETUP line (OS, node, Playwright, Chromium, port), so two runs can be compared.
+
+Seen on Linux: a check frees a port that another process holds, starts the preview, and stops it at the end. With
+no Playwright Chromium it stops in 2 s with the install command. After `npx playwright install chromium` (about 300 MB),
+all three checks ran on it and printed `SETUP linux x64 · node v22.22.1 · playwright 1.63.0 · chromium 153.0.8010.12`.
+No preview was left on the port. The harness is not yet tested on Windows.
+
 ## Not verified in this pass
 
 - The desktop launcher (`node tools/shot-desktop.mjs`): it loads the full game in Electron, which needs the same

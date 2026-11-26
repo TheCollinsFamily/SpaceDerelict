@@ -6,19 +6,16 @@
  * Usage: npm run build && npm run test:visual
  * Artifacts: tools/screenshots/*.png
  */
-import { spawn, execSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { chromium } from '@playwright/test';
+import { PORT, startPreview, stopPreview, launchBrowser } from './check-harness.mjs';
 import { PNG } from 'pngjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const root = join(here, '..');
 const shots = join(here, 'screenshots');
 mkdirSync(shots, { recursive: true });
 
-const PORT = Number(process.env.BROODFALL_PORT || 5199);
 const failures = [];
 const pass = (name) => console.log(`  PASS  ${name}`);
 const fail = (name, detail) => {
@@ -27,34 +24,6 @@ const fail = (name, detail) => {
 };
 
 // ---------- helpers ----------
-
-function freePort() {
-  try {
-    const out = execSync('netstat -ano', { encoding: 'utf8' });
-    const rows = out.split(String.fromCharCode(10));
-    for (const line of rows) {
-      const m = line.match(new RegExp(':' + PORT + '\\s+\\S+\\s+LISTENING\\s+(\\d+)'));
-      if (m) { try { execSync('taskkill /PID ' + m[1] + ' /T /F', { stdio: 'ignore' }); } catch {} }
-    }
-  } catch {}
-}
-
-function startPreview() {
-  freePort();
-  const child = spawn(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite', 'preview'], {
-    cwd: root, stdio: 'pipe', shell: process.platform === 'win32',
-  });
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('vite preview did not start in 30s')), 30000);
-    child.stdout.on('data', (d) => {
-      if (String(d).includes('localhost')) {
-        clearTimeout(timer);
-        resolve(child);
-      }
-    });
-    child.on('exit', (code) => reject(new Error(`vite preview exited early (${code})`)));
-  });
-}
 
 /** Average color of a rect region in a PNG buffer. */
 function regionAvg(png, x0, y0, w, h) {
@@ -86,7 +55,7 @@ let server;
 let browser;
 try {
   server = await startPreview();
-  browser = await chromium.launch();
+  browser = await launchBrowser();
   const page = await browser.newPage({ viewport: { width: 1500, height: 1100 } });
 
   const SEED = 42;
@@ -231,15 +200,7 @@ try {
   fail('harness', err.message);
 } finally {
   await browser?.close();
-  if (server) {
-    if (process.platform === 'win32') {
-      // shell:true means server.pid is the shell; kill the whole tree.
-      const { execSync } = await import('node:child_process');
-      try { execSync(`taskkill /PID ${server.pid} /T /F`, { stdio: 'ignore' }); } catch {}
-    } else {
-      server.kill();
-    }
-  }
+  stopPreview(server);
 }
 
 console.log(failures.length === 0
