@@ -126,6 +126,25 @@ no Playwright Chromium it stops in 2 s with the install command. After `npx play
 all three checks ran on it and printed `SETUP linux x64 · node v22.22.1 · playwright 1.63.0 · chromium 153.0.8010.12`.
 No preview was left on the port. The harness is not yet tested on Windows.
 
+### The input and visual checks fixed
+
+The game was right in both. The checks were out of date or depended on the PC:
+
+- **Input, grow all organs.** Since the shelf (Nov 23) only four organs are on it before wave 1. The check now opens
+  the whole shelf first (`sim.cfg.unfold = false`), as a run that does not unfold has it. The Sling and Lobber steps,
+  which need those organs, pass again.
+- **Input, `sim is not defined`.** A line from the Chyme commit (Nov 22) wrote `sim.chyme` for `b.sim.chyme`.
+- **Input, directional placement.** With all organs grown, the step can draw a Conduit (an elbow of three cells) or a
+  Skipper (1 by 2). It picked the first cell a one-cell limb fits on. It now picks a cell where the drawn limb fits
+  facing the gate and one quarter turn on, and finds the placed limb by its family.
+- **Input, organ stage wait.** 5 s to 15 s: the first open loads the stage's pictures, and one run took over 5 s.
+- **Visual, sim advanced.** It waited 20 s of clock time and wanted 60 s of game time. At 8x that is about 160 s on a
+  fast PC but 36 to 38 s here. It now waits for 60 s of game time (2 min of clock time at most), so every PC checks
+  the same game state. Here it took 36 s. Biomass then passes too (83).
+
+Result on Linux, Chromium 153.0.8010.12: input 18 of 18, visual 13 of 13, endgame 2 of 2. The input check passed in
+three runs, the visual check in two. Not yet run on Windows.
+
 ## Not verified in this pass
 
 - The desktop launcher (`node tools/shot-desktop.mjs`): it loads the full game in Electron, which needs the same

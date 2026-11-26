@@ -66,8 +66,12 @@ try {
   // Early screenshot: minute-zero board.
   await page.screenshot({ path: join(shots, '01-boot.png') });
 
-  // Let the demo play ~2.5 sim minutes (8x speed).
-  await page.waitForTimeout(20000);
+  // Let the demo play until 60 s of GAME time pass (Nov 26 2026). It waited 20 s of clock time before, which at 8x
+  // is about 160 s of game time on a fast PC but only 36 to 38 s on a PC with no GPU: the same check then failed on
+  // one PC and passed on another. Now every PC checks the same game state; a slow one takes longer (2 min at most).
+  const clock0 = Date.now();
+  await page.waitForFunction(() => window.broodfall?.sim?.time > 60, null, { timeout: 120000, polling: 500 }).catch(() => {});
+  const clockS = ((Date.now() - clock0) / 1000).toFixed(0);
 
   // --- sim state assertions (through the exposed handle) ---
   const state = await page.evaluate(() => {
@@ -80,8 +84,8 @@ try {
     };
   });
 
-  if (state.time > 60) pass(`sim advanced (t=${state.time.toFixed(0)}s)`);
-  else fail('sim advanced', `t=${state.time.toFixed(0)}s after 20s at 8x`);
+  if (state.time > 60) pass(`sim advanced (t=${state.time.toFixed(0)}s after ${clockS}s of clock time at 8x)`);
+  else fail('sim advanced', `t=${state.time.toFixed(0)}s after ${clockS}s of clock time at 8x`);
   if (state.towers > 0) pass(`autoplayer built towers (${state.towers})`);
   else fail('autoplayer built towers', 'zero towers');
   if (state.waves >= 1) pass(`waves ran (${state.waves})`);

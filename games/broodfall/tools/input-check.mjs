@@ -32,7 +32,8 @@ try {
   } else fail('start state', `under hidden=${startsAtSetup} hand=${hand0}`);
   await page.evaluate(() => { window.broodfall.sim.meat.war = 500; window.broodfall.sim.chyme = 500; });
   await page.locator('#open-under').click();
-  await page.waitForSelector('#under:not(.hidden)', { timeout: 5000 });
+  // 15 s: the first open loads the stage's pictures (it once took over 5 s on a PC with no GPU, Nov 26 2026).
+  await page.waitForSelector('#under:not(.hidden)', { timeout: 15000 });
   const t0 = await page.evaluate(() => window.broodfall.sim.time);
   await page.waitForTimeout(500);
   const t1 = await page.evaluate(() => window.broodfall.sim.time);
@@ -63,9 +64,12 @@ try {
   await page.locator('#under-done').click();
   if (await page.locator('#under').isHidden()) pass('TO THE SURFACE closes the organ stage');
   else fail('under close', 'still open');
-  // The later limb checks need every theme's limbs drawable: grow the other themes.
+  // The later limb checks need every theme's limbs drawable: grow the other themes. A skirmish's shelf opens a block
+  // of organs at a time since Nov 23 2026 (Sim.unfolds, SHELF_AFTER): before wave 1 only four are on it, so the check
+  // opens the whole shelf first, as a run that does not unfold has it (fixed Nov 26 2026; it had stopped at 4 organs).
   const grownAll = await page.evaluate(() => {
     const s = window.broodfall.sim;
+    s.cfg.unfold = false;
     s.meat.war = 9999; s.chyme = 9999; s.meat.science = 9999;
     for (const id of ['gut', 'venom', 'nerve', 'lattice', 'womb', 'marrow', 'resonance', 'catapult', 'runner']) {
       let done = false;
@@ -180,35 +184,46 @@ try {
       s.meat.war = 900; s.chyme = 900; s.meat.science = 900;
       for (let guard = 0; guard < 400; guard++) {
         const i = s.hand.findIndex((c) => c.family === 'skipper' || c.family === 'conduit');
-        if (i >= 0) return i;
+        if (i >= 0) return { i, family: s.hand[i].family };
         s.issue({ kind: 'discard', cardIndex: 0 });
       }
       return -1;
     });
-    if (r < 0) fail('directional setup', 'no directional card');
+    if (r === -1) fail('directional setup', 'no directional card');
     else {
-      const spot = await page.evaluate(() => {
+      // A cell where THIS limb fits facing the gate and at the facing one right-click gives (Nov 26 2026): the Skipper takes 1 by 2 cells,
+      // the Conduit an elbow of three, so the first cell a one-cell limb fits on is not enough.
+      const spot = await page.evaluate((fam) => {
         const s = window.broodfall.sim;
-        for (let c = 0; c < s.map.cells.length; c++) if (s.canBuildTower(c)) return { ...s.cellCenter(c), cell: c };
+        const order = ['N', 'E', 'S', 'W'];
+        for (let c = 0; c < s.map.cells.length; c++) {
+          const start = s.facingTowardGate(s.cellCenter(c));
+          if (s.canBuildTower(c, fam, start) && s.canBuildTower(c, fam, order[(order.indexOf(start) + 1) % 4])) return { ...s.cellCenter(c), cell: c };
+        }
         return null;
-      });
-      await page.locator('#hand .card').nth(r).click();
+      }, r.family);
+      await page.locator('#hand .card').nth(r.i).click();
       const sp = await page.evaluate(([x, y]) => window.broodfall.worldToScreen(x, y), [spot.x, spot.y]);
       await page.mouse.move(box.x + (sp.x / sp.vw) * box.width, box.y + (sp.y / sp.vh) * box.height);
       const start = await page.evaluate((c) => window.broodfall.sim.facingTowardGate(window.broodfall.sim.cellCenter(c)), spot.cell);
       await page.mouse.click(box.x + (sp.x / sp.vw) * box.width, box.y + (sp.y / sp.vh) * box.height, { button: 'right' });
       await clickWorld(spot.x, spot.y);
-      const placed = await page.evaluate((c) => {
-        const t = window.broodfall.sim.towers.find((x) => x.cell === c);
+      // The limb just placed (its anchor cell can differ from the cell clicked on a limb of several cells).
+      const placed = await page.evaluate(([c, fam]) => {
+        const s = window.broodfall.sim;
+        const t = s.towers.find((x) => x.cell === c) ?? s.towers.filter((x) => x.family === fam).pop();
         return t ? t.facing : null;
-      }, spot.cell);
+      }, [spot.cell, r.family]);
       const order = ['N', 'E', 'S', 'W'];
       const expected = order[(order.indexOf(start) + 1) % 4];
       if (placed === expected) pass('directional placement: right-click rotates, click places with that facing');
       else fail('directional placement', `placed facing ${placed}, expected ${expected} (start ${start})`);
       // 4c. Right-click the BUILT directional limb rotates it again.
       await page.mouse.click(box.x + (sp.x / sp.vw) * box.width, box.y + (sp.y / sp.vh) * box.height, { button: 'right' });
-      const rotated = await page.evaluate((c) => window.broodfall.sim.towers.find((x) => x.cell === c)?.facing, spot.cell);
+      const rotated = await page.evaluate(([c, fam]) => {
+        const s = window.broodfall.sim;
+        return (s.towers.find((x) => x.cell === c) ?? s.towers.filter((x) => x.family === fam).pop())?.facing;
+      }, [spot.cell, r.family]);
       if (rotated === order[(order.indexOf(expected) + 1) % 4]) pass('built directional limb: right-click rotates it');
       else fail('built rotate', `facing ${rotated}`);
       await page.keyboard.press('Escape');
@@ -396,7 +411,7 @@ try {
   await page.evaluate(() => { window.broodfall.sim.meat.war = 500; window.broodfall.sim.chyme = 500; });
   // On a slow machine the build timer may have run out during the steps above (it runs in real time):
   // the wave is played out first; its end opens the organ stage by itself.
-  await page.evaluate(() => { const b = window.broodfall; for (let k = 0; k < 20000 && b.sim.phase === 'siege' && b.sim.outcome === 'playing'; k++) b.step(1); b.sim.meat.war = 500; sim.chyme = 500; });
+  await page.evaluate(() => { const b = window.broodfall; for (let k = 0; k < 20000 && b.sim.phase === 'siege' && b.sim.outcome === 'playing'; k++) b.step(1); b.sim.meat.war = 500; b.sim.chyme = 500; });
   await page.waitForTimeout(300);
   if (!(await page.locator('#under:not(.hidden)').count())) await page.locator('#open-under').click();
   await page.waitForSelector('#under:not(.hidden)', { timeout: 3000 });
