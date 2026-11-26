@@ -966,8 +966,8 @@ function showDebrief(): void {
   const verdict = won ? 'DIRECTIVE FULFILLED' : 'ASSET TERMINATED';
   void reportWait(debriefPictures(runPictures(won ? 'won' : 'lost', verdict,
     won ? 'The city is the body\'s. The Board notes your efficiency.' : 'The Board notes the loss of Navy property.',
-    [['directive', `${Math.floor(p.done)} / ${p.goal}`], ['waves repelled', String(sim.wavesCleared)],
-      ['districts held', String(sim.map.slots.filter(Boolean).length)], ['standing earned', `+${standingEarned()}`]])))
+    [['directive', `${Math.floor(p.done)} / ${p.goal}`], [sim.wavesCleared === 1 ? 'wave repelled' : 'waves repelled', String(sim.wavesCleared)],
+      [sim.map.slots.filter(Boolean).length === 1 ? 'district held' : 'districts held', String(sim.map.slots.filter(Boolean).length)], ['standing earned', `+${standingEarned()}`]])))
     .then((pics) => {
       document.getElementById('debrief-pictures')!.replaceChildren(pics);
       debriefEl.querySelector('.screen-card')!.classList.add('pictured');

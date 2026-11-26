@@ -157,6 +157,9 @@ body.in-ship #art-notice, body:has(#debrief:not(.hidden)) #art-notice { display:
 #art-notice .an-btns { display: flex; }
 /* The way out of a long report is always on the screen. */
 .debrief-card #debrief-ship { position: sticky; bottom: 0; box-shadow: 0 -8px 16px rgba(184, 168, 120, 0.9); }
+/* The report has the window to itself (playtest, Nov 26 2026): at 1366x768 the hand of limb cards stayed under it and
+   took the report's room, so the report scrolled and its button floated over the limbs it lists. */
+body:has(#debrief:not(.hidden)) #botbar { display: none; }
 
 /* ============================================================================================
    THE SHIP-CONSOLE FAMILY FOR THE SCREENS AROUND THE BOARD (Sep 30 2026 fix pass). Collins chose
@@ -199,7 +202,9 @@ body.in-ship #art-notice, body:has(#debrief:not(.hidden)) #art-notice { display:
   background: var(--cs-ink); color: #07090b;
 }
 [data-hud="ship"] #debrief .screen-btn:hover, [data-hud="ship"] #ship .screen-btn:hover { background: #fff; }
-[data-hud="ship"] .debrief-card #debrief-ship { box-shadow: 0 -10px 18px rgba(7, 9, 11, 0.95); }
+/* Pinned at the foot of a report that still scrolls (a small window): a dark band the width of the card behind it, so the
+   lines that scroll under it are hidden, not crossed. */
+[data-hud="ship"] .debrief-card #debrief-ship { box-shadow: 0 0 0 100vmax rgba(7, 9, 11, 0.97); clip-path: inset(-14px -100vmax -40px -100vmax); }
 /* The splice screen's gene cards and its gate picker. */
 [data-hud="ship"] #ship .gene-card { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--cs-line); border-radius: 0; color: var(--cs-ink); text-align: left; }
 [data-hud="ship"] #ship .gene-card:hover { outline: none; border-color: #fff; }

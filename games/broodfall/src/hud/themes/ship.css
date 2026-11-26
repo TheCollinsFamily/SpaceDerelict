@@ -80,6 +80,10 @@
 [data-hud="ship"] #meat-war .meat-val { color: #ffd2c4; }
 [data-hud="ship"] #meat-science .meat-val { color: #d2fbf5; }
 [data-hud="ship"] #meat-royal .meat-val { color: #fff0c4; }
+/* The chyme purse in a wave (playtest, Nov 26 2026): the tick's 1.18 scale grew the number from the middle of the
+   whole tile, so it jumped onto the left edge; and "+N this wave" sat in the dot's column and pushed the label right. */
+[data-hud="ship"] #meat-chyme .meat-val { justify-self: start; transform-origin: left center; }
+[data-hud="ship"] #meat-chyme .meat-gain { grid-row: 3; grid-column: 1 / -1; }
 /* A thin caste-coloured line under each purse, like the lit edge of a screen. */
 [data-hud="ship"] .meat::after { content: ''; position: absolute; left: 8px; right: 8px; bottom: -1px; height: 1px; background: currentColor; opacity: 0.8; box-shadow: 0 0 6px currentColor; }
 [data-hud="ship"] #dial-threat b { color: #ffc4b8; }

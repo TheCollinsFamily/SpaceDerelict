@@ -338,11 +338,23 @@ export class Hud {
       if (e.kind === 'limb-hit') continue;
       const line = FEED_LINES[e.kind]?.(e);
       if (!line || !line.text) continue;
+      // The same line again counts on the newest one ("×3") and keeps it up longer (playtest, Nov 26 2026: a wave of
+      // kills stacked nine "resource acquired — 2 war + 1 ◆ chyme" lines over the right of the board at 1366x768).
+      const top = this.el.feed.firstElementChild as HTMLElement | null;
+      if (top && top.dataset.text === line.text) {
+        const n = Number(top.dataset.n ?? 1) + 1;
+        top.dataset.n = String(n);
+        top.textContent = `${line.text} ×${n}`;
+        window.clearTimeout(Number(top.dataset.timer));
+        top.dataset.timer = String(window.setTimeout(() => top.remove(), 6500));
+        continue;
+      }
       const div = document.createElement('div');
       div.className = `feed-item ${line.cls}`;
       div.textContent = line.text;
+      div.dataset.text = line.text;
       this.el.feed.prepend(div);
-      window.setTimeout(() => div.remove(), 6500);
+      div.dataset.timer = String(window.setTimeout(() => div.remove(), 6500));
       while (this.el.feed.children.length > 9) this.el.feed.lastChild?.remove();
     }
   }
