@@ -5,6 +5,7 @@
  * numbers) and what the height adds, so a roof three levels up reads "+20% height" before the click.
  */
 import { BALANCE as B } from '../../content/data';
+import { uiScale } from './limbCard';
 
 /** What the readout says, or '' for a limb that reaches nothing (a producer, a wall). */
 export function reachText(st: { range: number; groundRange: number; height: number }, cellPx?: number): string {
@@ -37,8 +38,9 @@ export function showReachTip(clientX: number, clientY: number, text: string): vo
   const t = tip();
   if (!text) { t.style.display = 'none'; return; }
   t.textContent = text;
-  t.style.left = `${clientX + 18}px`;
-  t.style.top = `${clientY + 20}px`;
+  const k = uiScale(); // zoomed by the text size: its left and top count in zoomed px (src/ui/limbCard.ts uiScale)
+  t.style.left = `${(clientX + 18) / k}px`;
+  t.style.top = `${(clientY + 20) / k}px`;
   t.style.display = 'block';
 }
 

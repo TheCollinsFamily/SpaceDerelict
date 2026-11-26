@@ -55,6 +55,7 @@ export const settingsOpen = (): boolean => !!current;
 export function applySettings(s: Settings = loadSettings()): void {
   const html = document.documentElement;
   html.style.setProperty('--ui-scale', String(s.textScale));
+  html.classList.toggle('text-large', s.textScale > 1); // the top bar takes its compact layout (src/hud/themes/ship.css)
   html.classList.toggle('reduce-motion', s.reduceMotion);
   html.classList.toggle('reduce-flashes', s.reduceFlashes);
   const t = CASTE_TINTS[s.casteTints];

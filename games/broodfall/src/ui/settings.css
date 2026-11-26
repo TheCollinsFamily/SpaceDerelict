@@ -43,8 +43,14 @@
 @media (max-width: 1000px) { #settings .st-cols { grid-template-columns: 1fr 1fr; } }
 #view-settings { font-size: 15px; }
 
-/* Text size: the panels a player reads, scaled (the board itself is not). */
-#topbar, #feed, #hint, #inspect, #board-goals, #hand, #view-controls, #banner, #draft-card-wrap, #under-card,
+/* Text size: the panels a player reads, scaled (the board itself is not). Nov 26 2026 (Bruno: "make text size scale
+   the in-run HUD too"): the whole bottom bar, not only its hand (the creep nodes, plinths, ORGANS and CANNIBALIZE stayed
+   small), the core's integrity bar, the district placing panel, the old end overlay, the decrees, the unit roster and
+   its alerts, the cards of the two explainers, and the limb card and reach readout (they follow the pointer, so their
+   code divides their position by the scale: src/ui/limbCard.ts, src/ui/reachTip.ts). The marks over units follow the
+   board, not the text, and are not scaled. */
+#topbar, #feed, #hint, #inspect, #board-goals, #botbar, #view-controls, #banner, #draft-card-wrap, #under-card,
+#core-hp-wrap, #place-district, #limb-card, #reach-tip, #overlay-card, #decrees, #unit-roster, #unit-alerts, #explain-sacrifice .xs-card, #boss-call .bc-screen,
 .screen-card, #campaign .cp-card, #menu .menu-console, #campaign .cp-icom, #campaign .cp-scene-card { zoom: var(--ui-scale, 1); }
 
 /* Reduce motion: nothing slides, pulses or glows on a loop. */

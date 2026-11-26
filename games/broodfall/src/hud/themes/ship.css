@@ -384,6 +384,13 @@
   [data-hud="ship"] #biomass-label { white-space: normal; line-height: 1.25; }
   [data-hud="ship"] #wave-info { white-space: normal; max-width: 260px; }
 }
+/* A larger text size takes the room of a smaller window (Nov 26 2026): at 1920x1080 with LARGER (1.3) the top bar is
+   1477 px wide in its own units, and the next-wave line ran under THREAT. The same compact top bar as up to 1500 px. */
+[data-hud="ship"].text-large #brand-sub { display: none; }
+[data-hud="ship"].text-large #brand-title { font-size: 13px; letter-spacing: 4px; }
+[data-hud="ship"].text-large #brand { flex: 0 1 150px; min-width: 0; }
+[data-hud="ship"].text-large #biomass-label { white-space: normal; line-height: 1.25; }
+[data-hud="ship"].text-large #wave-info { white-space: normal; max-width: 260px; }
 @media (max-width: 1280px) {
   [data-hud="ship"] #topbar { gap: 7px; padding: 6px 10px; }
   [data-hud="ship"] #brand { display: none; }

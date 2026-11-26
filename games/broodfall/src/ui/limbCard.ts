@@ -10,6 +10,15 @@ let el: HTMLDivElement | null = null;
 let lastKey = '';
 /** The box's size after its last render (read once per content change, not per pointer move). */
 let size = { w: 0, h: 0 };
+
+/**
+ * The text size (Settings), which zooms this card (src/ui/settings.css). A zoomed box's left and top count in its own
+ * zoomed px (left 100px lands at 130 at 1.3), and offsetWidth is its size before the zoom: so the card's size on the
+ * screen is size x k, and its left and top are the screen position / k.
+ */
+export function uiScale(): number {
+  return Number(getComputedStyle(document.documentElement).getPropertyValue('--ui-scale')) || 1;
+}
 /** What it is showing: a board limb (its id), a hand family, or nothing. */
 let showing: { kind: 'limb'; id: number } | { kind: 'hand'; family: string } | null = null;
 
@@ -65,15 +74,17 @@ export function showLimbCard(id: number, c: StatCard, anchor: { left: number; to
   render(c, '', banner);
   showing = { kind: 'limb', id };
   b.classList.remove('hidden');
-  const { w, h } = size;
+  const k = uiScale();
+  const w = size.w * k;
+  const h = size.h * k;
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   let x = anchor.right + GAP;
   if (x + w > vw - 8) x = anchor.left - GAP - w;
   if (x < 8) x = clamp(anchor.right + GAP, 8, vw - w - 8);
   const y = clamp(pointerY - h * 0.35, 8, vh - h - 8);
-  b.style.left = `${Math.round(x)}px`;
-  b.style.top = `${Math.round(y)}px`;
+  b.style.left = `${Math.round(x / k)}px`;
+  b.style.top = `${Math.round(y / k)}px`;
 }
 
 /** Show a hand card's card above that hand card (the hand sits at the bottom of the window). */
@@ -82,13 +93,15 @@ export function showHandCard(family: string, c: StatCard, cardRect: DOMRect, foo
   render(c, foot, '');
   showing = { kind: 'hand', family };
   b.classList.remove('hidden');
-  const { w, h } = size;
+  const k = uiScale();
+  const w = size.w * k;
+  const h = size.h * k;
   const vw = window.innerWidth;
   let y = cardRect.top - GAP - h;
   if (y < 8) y = 8;
   const x = clamp(cardRect.left + cardRect.width / 2 - w / 2, 8, vw - w - 8);
-  b.style.left = `${Math.round(x)}px`;
-  b.style.top = `${Math.round(y)}px`;
+  b.style.left = `${Math.round(x / k)}px`;
+  b.style.top = `${Math.round(y / k)}px`;
 }
 
 export function hideLimbCard(kind?: 'limb' | 'hand'): void {
