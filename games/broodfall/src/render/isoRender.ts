@@ -101,6 +101,8 @@ const FLY_UP = 2.4;
 const GHOST_ALPHA = 0.26;
 /** How long after its last blow an enemy still counts as eating the core (its ring stays up). */
 export const CORE_EATER_S = 2;
+/** How far down the core's picture frame the top of the heart is (its bar sits on it). */
+const CORE_BODY_TOP = 0.12;
 /** The first tile set's numbers: what the board is drawn with when the manifest names no tile set. */
 const ROOF_TINT = [0xb9a783, 0xd0bd96, 0xe6d3aa];
 const ROOF_PROPS: Record<string, string[]> = {
@@ -733,6 +735,17 @@ export class IsoRenderer extends Renderer {
    * away from the blow and is lit red for a moment (drawn in syncCore / syncLimbs), and a splat bursts on its side
    * facing the attacker; a shell or a bomber's blast bursts as a blast. Reduce flashes: no light, no glowing blast.
    */
+  /**
+   * The top middle of the core's picture and its width, in the canvas's pixels (for the bar over it: src/ui/coreBar.ts).
+   * The picture's frame is taller than the heart in it: its top is taken at the heart's, BODY_TOP of the frame down.
+   */
+  coreTop(): { x: number; y: number; w: number } | null {
+    if (!this.core || !this.core.visible || !this.core.texture) return null;
+    const b = this.core.getBounds();
+    if (!b.width) return null;
+    return { x: b.x + b.width / 2, y: b.y + b.height * CORE_BODY_TOP, w: b.width };
+  }
+
   /** The enemies that struck the core in the last CORE_EATER_S seconds and are still on the board. */
   coreEatersNow(sim: Sim): Enemy[] {
     return sim.enemies.filter((e) => { const at = this.coreEaters.get(e.id); return at !== undefined && sim.time - at <= CORE_EATER_S; });

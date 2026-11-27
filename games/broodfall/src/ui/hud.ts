@@ -699,6 +699,8 @@ export class Hud {
     const lag = document.getElementById('core-hp-lag');
     if (lag) lag.style.width = `${(coreFrac * 100).toFixed(1)}%`;
     this.el.coreFill.style.background = coreFrac > 0.4 ? 'var(--ok)' : 'var(--accent)';
+    const coreNum = document.getElementById('core-hp-num');
+    if (coreNum) coreNum.textContent = `${Math.max(0, Math.ceil(sim.coreHp))} / ${Math.round(sim.coreMaxHp)}`;
 
     // Cards: re-render only when the hand or affordability changes.
     // Mission 1 shows EAT A LIMB on a card only once it teaches eating (the explainer's own rule: revealed, or wave 1 cleared). Nov 26 2026.

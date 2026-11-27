@@ -12,6 +12,7 @@ import { hideReachTip, reachText, showReachTip } from './ui/reachTip';
 import { limbCard as limbStatCard } from './ui/limbStats';
 import { hideLimbCard, limbCardShowing, showLimbCard } from './ui/limbCard';
 import { IsoRenderer } from './render/isoRender';
+import { CoreBar } from './ui/coreBar';
 import { BoardArtSet, artUrl, loadManifest, pickBiome } from './render/art';
 import { Hud, PIP_DESC, sideWords } from './ui/hud';
 import { DecreeBox } from './ui/decrees';
@@ -1326,6 +1327,8 @@ function towerNearWorld(x: number, y: number): { id: number } | null {
 // ---------- the body below (between waves) ----------
 
 const under = new UndergroundScreen(() => sim, () => updateHint());
+/** The core's health over the core on the board (src/ui/coreBar.ts). */
+const coreBar = new CoreBar(document.getElementById('stage-wrap')!);
 const nodeBtn = document.getElementById('creep-nodes')!;
 const nodeTray = document.getElementById('node-tray')!;
 nodeBtn.addEventListener('click', (ev) => {
@@ -1835,6 +1838,7 @@ async function boot(): Promise<void> {
     hud.update(sim);
     limbHoverTick(now);
     coreEatTick();
+    coreBar.update(sim, renderer instanceof IsoRenderer ? renderer.coreTop() : null, started && sim.outcome === 'playing' && !under.open && !debriefShown && sim.phase !== 'draft');
     decreeBox.update();
     under.update();
     updateBoardPanel();
