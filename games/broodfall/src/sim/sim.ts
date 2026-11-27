@@ -43,7 +43,7 @@ const STRUCTURE_CONTACT = 24;    // px: latch-and-chew distance to a structure
 /** A limb drained every tick (a researcher extracting it) is told as hit at most this often, in seconds. */
 const LIMB_DRAIN_TELL = 0.3;
 /** Who hurt a limb or the core, for its 'limb-hit' / 'core-hit' event. */
-type HitSource = { from: Vec; by: HitBy; enemy?: EnemyKind };
+type HitSource = { from: Vec; by: HitBy; enemy?: EnemyKind; enemyId?: number };
 const CORE_CONTACT = 46;         // px: latch distance to the core
 const ENEMY_RADIUS = 8;
 const SEPARATION_DIST = 13;      // px: enemies shoulder each other apart
@@ -3912,7 +3912,7 @@ export class Sim {
   private hurtCore(amount: number, src: HitSource): void {
     if (amount <= 0) return;
     this.coreHp -= amount;
-    this.events.push({ kind: 'core-hit', amount, from: { ...src.from }, by: src.by, enemy: src.enemy, frac: Math.max(0, this.coreHp / this.coreMaxHp) });
+    this.events.push({ kind: 'core-hit', amount, from: { ...src.from }, by: src.by, enemy: src.enemy, enemyId: src.enemyId, frac: Math.max(0, this.coreHp / this.coreMaxHp) });
   }
 
   /**
@@ -4061,7 +4061,7 @@ export class Sim {
         if (t.hp <= 0) this.removeTower(t.id, true);
       }
     }
-    if (dist(e.pos, this.core) <= B.bomberBlastRadius + 30) this.hurtCore(B.bomberBlastDamage, { from: e.pos, by: 'blast', enemy: e.kind });
+    if (dist(e.pos, this.core) <= B.bomberBlastRadius + 30) this.hurtCore(B.bomberBlastDamage, { from: e.pos, by: 'blast', enemy: e.kind, enemyId: e.id });
     const i = this.enemies.indexOf(e);
     if (i >= 0) this.enemies.splice(i, 1);
   }
@@ -4409,7 +4409,7 @@ export class Sim {
         e.attackCooldown -= DT;
         if (e.attackCooldown <= 0) {
           e.attackCooldown = 1 / spec.rate;
-          this.hurtCore(spec.damage * this.empowerOf(e), { from: e.pos, by: 'melee', enemy: e.kind });
+          this.hurtCore(spec.damage * this.empowerOf(e), { from: e.pos, by: 'melee', enemy: e.kind, enemyId: e.id });
         }
         continue;
       }

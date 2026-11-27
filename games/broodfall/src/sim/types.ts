@@ -835,7 +835,7 @@ export type HitBy = 'melee' | 'shell' | 'blast' | 'extract' | 'ranged';
 export type SimEvent =
   | { kind: 'built'; family: TowerFamily; pips: number }
   /** The hive hurt the core (Nov 22 2026: the board's hit reaction and its sound hang on this). `from`: where the blow came from; `frac`: the integrity left, 0..1. */
-  | { kind: 'core-hit'; amount: number; from: Vec; by: HitBy; enemy?: EnemyKind; frac: number }
+  | { kind: 'core-hit'; amount: number; from: Vec; by: HitBy; enemy?: EnemyKind; /** Which enemy struck (melee, a bomber's blast; a shell has none at the core). */ enemyId?: number; frac: number }
   /** The hive hurt a limb (a drain is summed and told about three times a second). `shielded`: its shield took all of it. */
   | { kind: 'limb-hit'; towerId: number; family: TowerFamily; amount: number; at: Vec; from: Vec; by: HitBy; enemy?: EnemyKind; shielded: boolean }
   | { kind: 'organ-built'; organ: OrganId }

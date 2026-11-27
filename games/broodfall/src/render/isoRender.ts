@@ -99,6 +99,8 @@ const LOOK_GROW = 0.75;
 const FLY_UP = 2.4;
 /** How strongly a unit shows through what stands in front of it. */
 const GHOST_ALPHA = 0.26;
+/** How long after its last blow an enemy still counts as eating the core (its ring stays up). */
+export const CORE_EATER_S = 2;
 /** The first tile set's numbers: what the board is drawn with when the manifest names no tile set. */
 const ROOF_TINT = [0xb9a783, 0xd0bd96, 0xe6d3aa];
 const ROOF_PROPS: Record<string, string[]> = {
@@ -251,6 +253,12 @@ export class IsoRenderer extends Renderer {
   nets: Array<{ at: { x: number; y: number }; r: number; t: number }> = [];
   /** The hive's blows being shown (src/render/hitFx.ts): the core and the limbs flinch, flash and splat. */
   private hitMarks = new HitMarks();
+  /**
+   * THE CORE'S EATERS (playtest, Nov 26 2026: two Responders ate the core for a minute, each 8 px tall under its
+   * picture, just past a Lasher's reach, and nothing on the board said where): each enemy that struck the core, and
+   * when (sim time). One that struck in the last CORE_EATER_S seconds stands in a red ring (syncUnits, eaterRing).
+   */
+  private coreEaters = new Map<number, number>();
   /** When a splat last burst on the core / on each limb (real seconds): a swarm does not paint it solid. */
   private coreSplatAt = -1e9;
   private limbSplatAt = new Map<number, number>();
@@ -725,9 +733,15 @@ export class IsoRenderer extends Renderer {
    * away from the blow and is lit red for a moment (drawn in syncCore / syncLimbs), and a splat bursts on its side
    * facing the attacker; a shell or a bomber's blast bursts as a blast. Reduce flashes: no light, no glowing blast.
    */
+  /** The enemies that struck the core in the last CORE_EATER_S seconds and are still on the board. */
+  coreEatersNow(sim: Sim): Enemy[] {
+    return sim.enemies.filter((e) => { const at = this.coreEaters.get(e.id); return at !== undefined && sim.time - at <= CORE_EATER_S; });
+  }
+
   hit(sim: Sim, e: Extract<SimEvent, { kind: 'core-hit' } | { kind: 'limb-hit' }>): void {
     if (!this.geo) return;
     const core = e.kind === 'core-hit';
+    if (core && e.enemyId !== undefined) this.coreEaters.set(e.enemyId, sim.time);
     const at = core ? (this.square ?? sim.core) : e.at;
     let dx = e.from.x - at.x;
     let dy = e.from.y - at.y;
@@ -2249,8 +2263,39 @@ export class IsoRenderer extends Renderer {
 
   // ------------------------------------------------------------ units
 
+  /**
+   * A red ring at the feet of an enemy that is eating the core, pulsing (steady with reduce motion or flashes). It is
+   * drawn over the sprites (the marks layer, as the hit marks are): an eater stands at the core's foot, where the core's
+   * picture covers the ground. White when the limb in hand would reach it, so where to put the limb shows before the click.
+   */
+  private eaterRing(e: Enemy, p: Pt, reach: { x: number; y: number; r: number } | null): void {
+    const html = document.documentElement.classList;
+    const still = html.contains('reduce-motion') || html.contains('reduce-flashes');
+    const pulse = still ? 1 : 0.6 + 0.4 * Math.sin(performance.now() / 160);
+    const covered = !!reach && Math.hypot(e.pos.x - reach.x, e.pos.y - reach.y) <= reach.r;
+    const rx = (this.geo.a / K) * 0.8;
+    const ry = rx * 0.5;
+    const x = p.x / K;
+    const y = p.y / K;
+    this.marksG.ellipse(x, y, rx + 1.5, ry + 1.5).stroke({ width: 4, color: 0x1a0606, alpha: 0.5 });
+    this.marksG.ellipse(x, y, rx, ry).stroke({ width: covered ? 3 : 2.5, color: covered ? 0xffffff : 0xff3b2f, alpha: covered ? 1 : pulse });
+    if (covered) this.marksG.ellipse(x, y, rx + 5, ry + 3).stroke({ width: 2, color: 0xff3b2f, alpha: 0.85 });
+  }
+
   private syncUnits(sim: Sim, dt: number): void {
     const g = this.geo;
+    // The core's eaters: forget the old ones; and the reach of a limb in hand, which lights the rings it would cover.
+    for (const [id, at] of this.coreEaters) if (sim.time - at > CORE_EATER_S) this.coreEaters.delete(id);
+    let reach: { x: number; y: number; r: number } | null = null;
+    const pv = this.preview;
+    if (this.coreEaters.size && pv?.kind === 'tower' && pv.family) {
+      const cells = pv.cells ?? [pv.cell];
+      const cs = cells.map((c) => sim.cellCenter(c));
+      reach = {
+        x: cs.reduce((n, c) => n + c.x, 0) / cs.length, y: cs.reduce((n, c) => n + c.y, 0) / cs.length,
+        r: sim.previewStats(pv.family, cells, pv.facing, pv.pips ?? sim.pendingPips).range,
+      };
+    }
     for (const e of sim.enemies) {
       const spec = enemySpec(e.kind);
       if (spec.fixed) continue; // a field station or turret: drawn as a building (syncStations)
@@ -2258,6 +2303,8 @@ export class IsoRenderer extends Renderer {
       const air = sim.isAirborne(e);
       const up = air ? FLY_UP : this.heightAt(sim, e.pos.x, e.pos.y);
       const p = project(g, e.pos.x, e.pos.y, up);
+      const ate = this.coreEaters.get(e.id);
+      if (ate !== undefined && sim.time - ate <= CORE_EATER_S) this.eaterRing(e, p, reach);
       const found = this.art.units.get(e.kind);
       if (air) this.groundG.circle(e.pos.x, e.pos.y, r * 0.9).fill({ color: 0x000000, alpha: 0.28 });
       if (e.burrowed && !found?.art.anims.states?.burrowed) {

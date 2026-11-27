@@ -1247,6 +1247,30 @@ function cancelAll(): void {
 }
 
 /**
+ * THE CORE IS BEING EATEN (playtest, Nov 26 2026): enemies that strike the core stand in red rings on the board
+ * (IsoRenderer.coreEatersNow). When one of them has stood out of every limb's reach for EAT_WARN_S seconds, and nothing
+ * is in hand, the hint says so and where to look; the line goes back to its own when the blows stop or a limb covers it.
+ */
+const EAT_WARN_S = 5;
+let eatenSince: number | null = null;
+let eatWarned = false;
+function coreEatTick(): void {
+  if (!(renderer instanceof IsoRenderer)) return;
+  const eaters = sim.phase === 'siege' ? renderer.coreEatersNow(sim) : [];
+  const loose = eaters.filter((e) => !sim.towers.some((t) => Math.hypot(t.pos.x - e.pos.x, t.pos.y - e.pos.y) <= sim.statsOf(t).range));
+  eatenSince = loose.length ? eatenSince ?? sim.time : null;
+  const idle = selectedCard === null && armedOrgan === null && armedThrower === null && armedNode === null && !armedPlinth && armedSpread === null;
+  const warn = idle && eatenSince !== null && sim.time - eatenSince >= EAT_WARN_S;
+  if (warn) {
+    hud.setHint(`THE CORE IS BEING EATEN: ${loose.length === 1 ? 'one of them stands' : `${loose.length} of them stand`} out of your limbs' reach (red ring${loose.length === 1 ? '' : 's'}) — pick a limb card and place it next to ${loose.length === 1 ? 'it' : 'them'}`);
+    eatWarned = true;
+  } else if (eatWarned) {
+    eatWarned = false;
+    updateHint();
+  }
+}
+
+/**
  * THE LIMB STAT CARD on hover (src/ui/limbCard.ts, words in src/ui/limbStats.ts): beside the limb, never over it.
  * Shown from the board's pointermove; kept true (and hidden when covered) by limbHoverTick in the frame loop.
  */
@@ -1810,6 +1834,7 @@ async function boot(): Promise<void> {
     if (started) watchBoard(sim);
     hud.update(sim);
     limbHoverTick(now);
+    coreEatTick();
     decreeBox.update();
     under.update();
     updateBoardPanel();
