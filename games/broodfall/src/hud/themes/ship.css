@@ -135,7 +135,7 @@
 /* ---------- over the board: glass readouts, never more than the classic HUD covered ---------- */
 [data-hud="ship"] #stage-wrap { background: #040506; }
 
-[data-hud="ship"] #core-hp-wrap { width: 200px; }
+[data-hud="ship"] #core-hp-wrap { width: 220px; }
 [data-hud="ship"] #core-hp-label { font: 400 9px/1 var(--sc-font); letter-spacing: 2.5px; color: var(--sc-dim); margin-bottom: 4px; text-shadow: 0 1px 2px #000; }
 [data-hud="ship"] #core-hp-label::before { content: '⚙  '; color: var(--sc-ink); }
 [data-hud="ship"] #core-hp-bar { height: 8px; border-radius: 0; background: rgba(3, 4, 5, 0.85); border: 1px solid var(--sc-line-hi); }

@@ -136,7 +136,9 @@ body.view-iso #view-controls { display: flex; }
 @keyframes feedin { from { transform: translateX(20px); opacity: 0; } }
 
 #core-hp-wrap { position: absolute; left: 10px; top: 10px; width: 190px; }
-#core-hp-label { font-size: 9px; letter-spacing: 2px; color: #cbb; }
+#core-hp-label { font-size: 9px; letter-spacing: 2px; color: #cbb; white-space: nowrap; }
+/* The number at the bar's right end, on the label's line (it broke the label onto two lines at 200 px: Nov 27 2026). */
+#core-hp-num { float: right; letter-spacing: 1px; color: #e9eef0; }
 #core-hp-bar { height: 12px; background: #1d130f; border: 2px solid #52422c; border-radius: 3px; overflow: hidden; }
 #core-hp-bar { position: relative; }
 #core-hp-fill { position: relative; height: 100%; width: 100%; background: var(--ok); transition: width 0.3s, background 0.3s; }
