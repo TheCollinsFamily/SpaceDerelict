@@ -9,7 +9,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { PORT, startPreview, stopPreview, launchBrowser } from './check-harness.mjs';
+import { PORT, BOOT_MS, startPreview, stopPreview, launchBrowser } from './check-harness.mjs';
 import { PNG } from 'pngjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -60,7 +60,7 @@ try {
 
   const SEED = 42;
   await page.goto(`http://localhost:${PORT}/?auto=1&seed=${SEED}&speed=8&directive=hold`, { waitUntil: 'load' });
-  await page.waitForSelector('#stage canvas', { timeout: 15000 });
+  await page.waitForSelector('#stage canvas', { timeout: BOOT_MS });
   pass('page boots and the canvas mounts');
 
   // Early screenshot: minute-zero board.

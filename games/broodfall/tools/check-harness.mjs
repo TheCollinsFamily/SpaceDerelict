@@ -22,6 +22,11 @@ import { chromium } from '@playwright/test';
 
 /** The port the built game is served on: its own for every session that runs beats at the same time. */
 export const PORT = Number(process.env.BROODFALL_PORT || 5199);
+/**
+ * How long a check waits for the game's board to appear (Nov 26 2026): 18 to 22 s on a PC with no GPU and a game open
+ * in another tab, against a 15 s limit that a fast PC met. The check goes on as soon as the board is there.
+ */
+export const BOOT_MS = 90000;
 export const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const WINDOWS = process.platform === 'win32';
 

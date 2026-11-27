@@ -6,7 +6,7 @@
 import { mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { PORT, startPreview, stopPreview, launchBrowser } from './check-harness.mjs';
+import { PORT, BOOT_MS, startPreview, stopPreview, launchBrowser } from './check-harness.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const shots = join(here, 'screenshots');
@@ -22,7 +22,7 @@ try {
   const page = await browser.newPage({ viewport: { width: 1500, height: 1100 } });
   // Seed 3 wins with the naive policy in the headless tests; speed 60 saturates the step cap.
   await page.goto('http://localhost:' + PORT + '/?auto=1&seed=1&speed=60&directive=hold', { waitUntil: 'load' });
-  await page.waitForSelector('#stage canvas');
+  await page.waitForSelector('#stage canvas', { timeout: BOOT_MS });
 
   let outcome = 'playing';
   const started = Date.now();

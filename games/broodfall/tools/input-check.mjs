@@ -5,7 +5,7 @@
  */
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { PORT, startPreview, stopPreview, launchBrowser } from './check-harness.mjs';
+import { PORT, BOOT_MS, startPreview, stopPreview, launchBrowser } from './check-harness.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const failures = [];
@@ -18,7 +18,7 @@ try {
   browser = await launchBrowser();
   const page = await browser.newPage({ viewport: { width: 1500, height: 1100 } });
   await page.goto('http://localhost:' + PORT + '/?seed=7&autostart=1', { waitUntil: 'load' });
-  await page.waitForSelector('#stage canvas');
+  await page.waitForSelector('#stage canvas', { timeout: BOOT_MS });
 
   // 0. The run starts at WAVE SETUP (no organ screen first), with only the
   //    meteor's limbs in the draw. The ORGANS button opens the organ stage
