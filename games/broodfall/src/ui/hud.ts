@@ -175,6 +175,23 @@ export interface HudCallbacks {
 }
 
 /** "S" / "N+E" (Sim.gateSide letters) as words: "SOUTH", "NORTH AND EAST". A lone letter read like a typo (Nov 26 2026). */
+/**
+ * The line under the phase (Nov 26 2026 playtest: "WAVE 1" under ASSAULT FORMING read as the wave to come, when it was
+ * the last one started). In a wave: that wave, its tier and its risk. Between waves (forming, the draft): the wave that
+ * comes, ITS tier, and what it brings; the last wave's risk is not shown there. "OF 12" on a hold order.
+ */
+export function waveLine(o: {
+  siege: boolean; wave: number; tierOf: (wave: number) => number; holdWaves: number | null;
+  risk: number; mass: number; next: string; intelHidden: boolean;
+}): string {
+  const n = o.siege ? o.wave : o.wave + 1;
+  const of = o.holdWaves && n <= o.holdWaves ? ` OF ${o.holdWaves}` : '';
+  return `WAVE ${n}${of} · TIER ${o.tierOf(n)}`
+    + (o.siege && o.risk > 0 ? ` · RISK ${o.risk}` : '')
+    + ` · MASS ${o.mass}`
+    + (o.next ? ` · NEXT: ${o.next}` : o.intelHidden ? ' · NEXT: unknown' : '');
+}
+
 export function sideWords(sides: string): string {
   const name: Record<string, string> = { N: 'NORTH', S: 'SOUTH', E: 'EAST', W: 'WEST' };
   const parts = sides.split('+').map((s) => name[s.trim()] ?? s.trim()).filter(Boolean);
@@ -665,10 +682,11 @@ export class Hud {
     const next = sim.phase === 'growth' && !sim.waveIntelHidden
       ? Object.entries(sim.previewNextWave()).sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0)).slice(0, 4).map(([k, n]) => `${n} ${k}`).join(', ')
       : '';
-    this.el.waveInfo.textContent = `WAVE ${sim.waveNumber} · TIER ${sim.tier}`
-      + (sim.waveRisk > 0 ? ` · RISK ${sim.waveRisk}` : '')
-      + ` · MASS ${Math.floor(sim.biomass)}`
-      + (next ? ` · NEXT: ${next}` : sim.waveIntelHidden && sim.phase === 'growth' ? ' · NEXT: unknown' : '');
+    this.el.waveInfo.textContent = waveLine({
+      siege: sim.phase === 'siege', wave: sim.waveNumber, tierOf: (n) => sim.tierFor(n),
+      holdWaves: sim.directive.kind === 'hold' ? sim.directive.waves : null, risk: sim.waveRisk, mass: Math.floor(sim.biomass),
+      next, intelHidden: sim.waveIntelHidden && sim.phase === 'growth',
+    });
     this.el.threat.textContent = String(Math.floor(sim.threat));
     this.el.interest.textContent = String(Math.floor(sim.interest));
     // A closed caste (Sim.scienceOpen / royalOpen, Oct 30 2026): its dial, its meat and its button say nothing this deployment.
