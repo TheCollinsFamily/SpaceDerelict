@@ -60,7 +60,7 @@ checklist (`references/CONVENTIONS.md`) was not walked item by item in this pass
 third run on seed 11 bought a Venom Sac after wave 1 and had two Lashers and a Spitter: it cleared wave 2 with 912 of
 1500 core left. Two runs are not proof, but no cheap line won.
 
-## Open findings (not fixed)
+## Open findings (all three fixed on Nov 27: see the last section)
 
 - A. A Responder that parks at the core is hard to see and can sit just outside a limb's reach. A pointer to the
   thing that hits the core, or a larger mark on it, would help.
@@ -145,8 +145,35 @@ The game was right in both. The checks were out of date or depended on the PC:
 Result on Linux, Chromium 153.0.8010.12: input 18 of 18, visual 13 of 13, endgame 2 of 2. The input check passed in
 three runs, the visual check in two. Not yet run on Windows.
 
+## Nov 27 2026: the open findings, the core bar, and the release checks
+
+### Fixed (each seen in the page, each its own commit)
+
+| Commit | What |
+|---|---|
+| 5538084a | C. Between waves, the line names the wave to come: "WAVE 2 OF 12". It shows that wave's tier and no risk. |
+| 2e88bc24 | B. An organ name wraps to a second line. It is never cut. NEW moves to the price line. |
+| b4b6e216 | A. An enemy that hit the core in the last 2 s gets a red ring. The ring turns white when the limb in hand reaches it. After 5 s out of reach, the hint says THE CORE IS BEING EATEN. |
+| 4398ae8f | Bruno's request. A bar over the core shows its health, for example "1384 / 1500". A hit leaves a fading band. A heal shows "+N" in green. The core does not heal between waves. Only the Queen's Heart decree heals it. |
+| ed58a6f0 | The ASSET INTEGRITY label keeps its number on one line. The Windows build showed it broken. |
+
+### Checks on that code
+
+| Check | Result |
+|---|---|
+| Full test suite | PASS: 91 files, 976 tests. |
+| Build | PASS. |
+| Input, visual and endgame checks | PASS: 18, 14 and 2 steps. The memory guard stopped one endgame run during a Unity job of another session. The next run passed. |
+| YOKE's live mind on rfab.ai | PASS. Two lines, said through the game's own link code and the dev proxy. Her first sentence came after 1.3 s and 1.8 s. The game waits 45 s. The replies had 13 and 16 sentences, and all came through. Her history held both replies whole. The key was Bruno's, made for this test. This test did not use the page, because of memory. |
+| The Windows build under Proton 11.0 | PASS. Electron 45.1.0 for Windows ran a build made on Linux. The platform was Win32, and WebGL ran on the GPU through Direct3D 11. A first launch played the opening film. Esc gave mission 1 on the painted board, with the core bar. `Play Broodfall.bat` started electron.exe on its own folder. The game server answered in 16 s. |
+| Save and resume | PASS. A Lasher went down by clicks, and wave 1 began. Then the page went to the menu. RESUME DEPLOYMENT brought back the same seed, wave, WAR and Lasher (cell 476). The run went on from tick 47. |
+
+Proton is not Windows itself. This test did not cover Broodfall.lnk. Malcolm still needs to start the game once on his
+PC before a release.
+
 ## Not verified in this pass
 
-- The desktop launcher (`node tools/shot-desktop.mjs`): it loads the full game in Electron, which needs the same
-  memory, and it opens a window on the screen.
-- Mission 2 and later, the win report, the ship after a run.
+- Mission 2 and later, the last mission, the ending films, the ship after each mission.
+- A skirmish won by hand to 12 waves, with its drafts after waves 3, 6 and 9.
+- YOKE's live mind in the page itself (the page display passed with a faked stream on Nov 26).
+- The release build: there is no packaged desktop game (no installer, no Steamworks) yet.
