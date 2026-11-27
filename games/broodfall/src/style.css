@@ -405,7 +405,9 @@ body:has(#under:not(.hidden)) #topbar, body:has(#under:not(.hidden)) #botbar { v
 #under-meat .um-news.fresh { border-left-color: #8fffc4; animation: news-in 2.4s ease-out 1; }
 @keyframes news-in { 0%, 30% { background: rgba(120, 255, 190, 0.28); } 100% { background: transparent; } }
 .under-organ.fresh { position: relative; box-shadow: 0 0 0 2px #8fffc4 inset, 0 0 12px rgba(143, 255, 196, 0.45); }
-.under-organ em.new { position: absolute; top: 2px; right: 4px; font-style: normal; font-size: 10px; font-weight: bold; letter-spacing: 1px; color: #0c1a14; background: #8fffc4; padding: 0 4px; border-radius: 2px; }
+/* NEW sits at the end of the price line, not over the name. */
+.under-organ.fresh { grid-template-areas: "tile name shape" "tile what what" "tile price new"; }
+.under-organ em.new { grid-area: new; align-self: center; justify-self: end; font-style: normal; font-size: 10px; font-weight: bold; letter-spacing: 1px; color: #0c1a14; background: #8fffc4; padding: 0 4px; border-radius: 2px; }
 /* THE RUMEN (DESIGN.md "THE RUMEN"): drawn as the Gut's tissue, fermented bile-gold (no art of its own). */
 #under-grid .o-rumen, #under-palette .under-organ[data-organ="rumen"] .pal-tile { filter: hue-rotate(65deg) saturate(1.5) brightness(1.1); }
 body.science-closed #under-meat .um-sci, body.first-mission:not(.m1-science) #under-meat .um-sci { display: none; }
@@ -419,7 +421,8 @@ body.science-closed #under-meat .um-sci, body.first-mission:not(.m1-science) #un
   font: inherit; font-size: 0.9em; padding: 5px 7px; color: var(--ink);
   background: #c7b788; border: 2px solid var(--panel-edge); border-radius: 3px;
 }
-.under-organ b { grid-area: name; font-size: 1.12em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* The name wraps to a second line, never cut ("METEOR C…", "DIGESTIVE LINI…" at 1366x768: playtest, Nov 26 2026). */
+.under-organ b { grid-area: name; font-size: 1.12em; text-transform: uppercase; overflow-wrap: anywhere; line-height: 1.2; }
 .under-organ .shape { grid-area: shape; margin-top: 2px; }
 /* What it does: one line on a short window, two on most, three on a tall one (the whole of it is in the readout under the board on hover). */
 .under-organ span:not(.og) { grid-area: what; line-height: 1.25; opacity: 0.85; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
