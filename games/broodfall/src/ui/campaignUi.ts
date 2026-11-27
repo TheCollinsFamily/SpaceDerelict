@@ -1330,7 +1330,10 @@ ${contentNote(loadSettings().content)}`, lore }, talk.turns, said);
       // Her mind agreed to print a body: it says so with a tag, which is never shown.
       const tagged = raw.some((l) => l.includes(`[[${PRINT_BODY.tag}]]`));
       const lines = raw.map((l) => l.replace(/\s*\[\[[A-Z_]+\]\]\s*/g, ' ').trim()).filter(Boolean);
-      if (this.icom?.talk === talk) for (const l of lines) talk.turns.push({ speaker: 'YOKE', text: l });
+      // One reply, one paragraph (Bruno's playtest, Nov 26 2026): her mind sends a sentence at a time, and a turn for each
+      // read as a string of fragments, and pushed the start of a long reply out of the last 12 turns the intercom shows.
+      // Her history on rfab.ai keeps a reply as one message: after a reload it read whole, live it did not.
+      if (this.icom?.talk === talk && lines.length) talk.turns.push({ speaker: 'YOKE', text: lines.join(' ') });
       if (tagged) void this.printBody(talk);
     } finally {
       this.waiting = false;

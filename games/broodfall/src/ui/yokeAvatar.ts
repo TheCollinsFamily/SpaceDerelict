@@ -61,7 +61,7 @@ const FACE: Record<string, string> = {
 };
 
 type Beat =
-  | { kind: 'say'; text: string; emotion: string | null; voice: Promise<ArrayBuffer | null>; shown: boolean; onShow?: (text: string) => void }
+  | { kind: 'say'; text: string; emotion: string | null; voice: Promise<ArrayBuffer | null>; shown: boolean; onShow?: (text: string) => void; reply?: number }
   | { kind: 'move'; state: string }
   /** An expression held for a while (a cue that is not a one-shot gesture). */
   | { kind: 'hold'; state: string; ms: number }
@@ -112,6 +112,10 @@ export class YokeAvatarUi implements ShipAiProvider {
   /** The talk her sentences belong to, and those of this answer that are already on the screen. */
   private turns: AiTurn[] | null = null;
   private said: string[] = [];
+  /** The next sentence of a reply begins its paragraph (a new reply); after it, her sentences extend that paragraph. */
+  private newPara = true;
+  /** Which reply this is (one more each time he is answered): a queued sentence knows the reply it belongs to. */
+  private replyNo = 0;
   private heard = 0;
   private glance: ReturnType<typeof setTimeout> | null = null;
   private gone = false;
@@ -130,8 +134,10 @@ export class YokeAvatarUi implements ShipAiProvider {
       onThinking: (on) => { this.thinking = on; this.rest(); },
     });
     this.talk.onUnasked = (text, emotion) => {
-      // A sentence that came after her answer was taken to be over: it is hers all the same.
-      this.turns?.push({ speaker: 'YOKE', text });
+      // A sentence that came after her answer was taken to be over: it is hers all the same, and part of that reply.
+      const last = this.turns?.[this.turns.length - 1];
+      if (last?.speaker === 'YOKE') last.text = `${last.text} ${text}`;
+      else this.turns?.push({ speaker: 'YOKE', text });
       this.say(text, emotion, true);
     };
     // While nobody pays for her, the scripted YOKE answers (it costs nothing): never Kimi, which would bill the same account.
@@ -379,6 +385,8 @@ export class YokeAvatarUi implements ShipAiProvider {
     this.turns = history;
     this.said = [];
     this.heard = 0;
+    this.newPara = true;
+    this.replyNo++;
     this.restFace = ctx.trigger;
     const lines = await this.ladder.reply(ctx, history, playerLine);
     // Lines of a lower rung arrive all at once and with no face: she says them as she says her own.
@@ -390,7 +398,7 @@ export class YokeAvatarUi implements ShipAiProvider {
 
   /** The sentences of the answer that is still coming: drawn by the campaign's screen while it waits. */
   pendingHtml(): string {
-    return this.said.map((t) => `<div class="yoke"><b>YOKE:</b> ${esc(t)}</div>`).join('');
+    return this.said.length ? `<div class="yoke"><b>YOKE:</b> ${esc(this.said.join(' '))}</div>` : '';
   }
 
   /**
@@ -431,8 +439,8 @@ export class YokeAvatarUi implements ShipAiProvider {
     // A tag her mind writes for the game ([[PRINT_BODY]]) is never shown or spoken.
     text = text.replace(/\s*\[\[[A-Z_]+\]\]\s*/g, ' ').trim();
     if (!text) return;
-    this.beats.push({ kind: 'say', text, emotion, voice: this.voice(text), shown: late });
-    if (late) this.line(text);
+    this.beats.push({ kind: 'say', text, emotion, voice: this.voice(text), shown: late, reply: this.replyNo });
+    if (late) this.line(text, 'late');
     void this.drain();
   }
 
@@ -473,12 +481,16 @@ export class YokeAvatarUi implements ShipAiProvider {
       } else {
         const sound = await Promise.race([beat.voice, wait(9000).then(() => null), cut]);
         // Her words appear as she begins to say them.
+        // A sentence of an earlier reply, said only now (her stream outruns her voice, and he has spoken since): the talk
+        // holds it already, in that reply's paragraph. It is said, not drawn again onto the end of the new reply.
+        if (!beat.shown && !beat.onShow && beat.reply !== undefined && beat.reply !== this.replyNo) beat.shown = true;
         if (!beat.shown) {
           if (beat.onShow) beat.onShow(beat.text); else this.said.push(beat.text);
           // Her answer is taken as over 3 s after its last sentence came, while her voice may still be
           // on an earlier one: by the time a sentence is said, the campaign may have put it in the talk
           // and drawn it already. Drawn twice it read as a repeat (seen Sep 30 2026).
-          if (beat.onShow || !this.inTalk(beat.text)) this.line(beat.text);
+          // A greeting's lines are written one by one and stay apart; a reply's sentences make one paragraph.
+          if (beat.onShow || !this.inTalk(beat.text)) this.line(beat.text, !beat.onShow);
         }
         const face = clipFor(beat.emotion ?? FACE[this.restFace] ?? 'calm', this.have);
         const talking = voiceClip(beat.emotion ?? FACE[this.restFace] ?? 'calm', this.have);
@@ -536,14 +548,25 @@ export class YokeAvatarUi implements ShipAiProvider {
   /** She said this since his last line, and the talk on the screen already holds it. */
   private inTalk(text: string): boolean {
     const turns = this.turns ?? [];
-    for (let i = turns.length - 1; i >= 0 && turns[i].speaker === 'YOKE'; i--) if (turns[i].text === text) return true;
+    for (let i = turns.length - 1; i >= 0 && turns[i].speaker === 'YOKE'; i--) if (turns[i].text === text || turns[i].text.includes(text)) return true;
     return false;
   }
 
-  /** One line of hers into the talk that is on the screen, without drawing the screen again. */
-  private line(text: string): void {
+  /**
+   * One line of hers into the talk that is on the screen, without drawing the screen again. `reply`: a sentence of a
+   * reply, which goes onto the end of that reply's paragraph (her last line in the box) once the reply has begun one.
+   * 'late': a sentence that came after her reply was taken to be over, which goes onto her last paragraph whenever it
+   * is the last line in the box (it belongs to that reply, whatever began since on the screen).
+   */
+  private line(text: string, reply: boolean | 'late' = false): void {
     const box = this.host.querySelector('.cp-talk');
     if (!box) return;
+    if (reply === 'late' || (reply && !this.newPara)) {
+      const lines = [...box.children].filter((e) => !e.classList.contains('thinking'));
+      const last = lines[lines.length - 1];
+      if (last?.classList.contains('yoke')) { last.append(` ${text}`); this.scroll(); return; }
+    }
+    if (reply) this.newPara = false;
     const div = document.createElement('div');
     div.className = 'yoke';
     const b = document.createElement('b');
