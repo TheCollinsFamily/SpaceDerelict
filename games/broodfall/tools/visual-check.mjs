@@ -200,6 +200,26 @@ try {
   await page.screenshot({ path: join(shots, '03-late.png') });
 
   writeFileSync(join(shots, 'last-state.json'), JSON.stringify(state, null, 2));
+
+  // Region 5: turning the camera leaves no copies behind (Bruno's playtest, Nov 26 2026, mission 2: each turn left
+  // a copy of every landmark at its old place, 2, 4, 6, 8, 10 sprites for 2 landmarks). A suburb board has them.
+  await page.goto(`http://localhost:${PORT}/?seed=11&autostart=1&biome=suburb`, { waitUntil: 'load' });
+  await page.waitForFunction(() => window.broodfall?.view?.() === 'iso' && window.broodfall.renderer?.landmarkAt?.size > 0, null, { timeout: 60000 });
+  const landmarksStanding = () => page.evaluate(() => {
+    const r = window.broodfall.renderer;
+    const entries = new Set([...r.landmarkAt.values()]);
+    const sources = new Set([...entries].map((e) => e.sprite?.texture?.source).filter(Boolean));
+    return { landmarks: entries.size, standing: r.sorted.children.filter((c) => c.texture && sources.has(c.texture.source)).length };
+  });
+  const counts = [await landmarksStanding()];
+  for (let t = 0; t < 4; t++) {
+    await page.evaluate(() => window.broodfall.turnBy(1));
+    await page.waitForTimeout(800);
+    counts.push(await landmarksStanding());
+  }
+  const lmOk = counts.every((c) => c.landmarks > 0 && c.standing === c.landmarks);
+  if (lmOk) pass(`turning the camera leaves no copies (${counts[0].landmarks} landmarks, ${counts.map((c) => c.standing).join(' ')} standing over 4 turns)`);
+  else fail('turning the camera', `landmark sprites over 4 turns: ${counts.map((c) => `${c.standing}/${c.landmarks}`).join(' ')}`);
 } catch (err) {
   fail('harness', err.message);
 } finally {

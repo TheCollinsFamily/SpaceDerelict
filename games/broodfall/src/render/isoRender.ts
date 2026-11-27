@@ -1003,6 +1003,11 @@ export class IsoRenderer extends Renderer {
     this.blockSprites = [];
     for (const s of this.props.values()) s.destroy();
     this.props.clear();
+    // The landmarks too (Bruno's playtest, Nov 26 2026, mission 2): planLandmarks forgets the old ones and placeLandmarks
+    // makes new ones, so each turn of the camera (and each district, plinth or shelter) left a copy at the old place.
+    const old = new Set<Sprite>();
+    for (const e of this.landmarkAt.values()) if (e.sprite) old.add(e.sprite);
+    for (const s of old) s.destroy();
     const g = this.geo;
     const W = sim.cfg.gridW;
     const size = viewSize(g);
