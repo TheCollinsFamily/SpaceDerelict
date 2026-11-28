@@ -24,6 +24,8 @@ import { coreStageOf } from '../render/coreStage';
 import { UnderAlive } from './underAlive';
 import { skylineLife } from './skylineLife';
 import type { Organ, OrganId, OrganPrice, TowerFamily } from '../sim/types';
+import { isKey } from '../meta/keys';
+import { loadSettings } from '../meta/storage';
 
 const COLOR: Record<OrganId, string> = {
   forge: '#d8cfb0', venom: '#6aa84f', gut: '#b5654a', nerve: '#e0c040', lattice: '#8fc7c0',
@@ -286,7 +288,7 @@ export class UndergroundScreen {
     window.addEventListener('keydown', (ev) => {
       if (!this.open) return;
       if (ev.key === 'Escape' && this.selected) { ev.preventDefault(); this.selected = null; this.lastKey = ''; this.render(); }
-      if (ev.key === 'r' || ev.key === 'R') { this.rot = (this.rot + 1) % 4; this.paintGhost(); this.updateStatus(); }
+      if (isKey(loadSettings().keys, 'turnPiece', ev.key) && !ev.ctrlKey && !ev.metaKey && !ev.altKey) { this.rot = (this.rot + (ev.shiftKey ? 3 : 1)) % 4; this.paintGhost(); this.updateStatus(); }
     });
   }
 

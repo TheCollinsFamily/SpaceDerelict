@@ -2832,7 +2832,7 @@ export class Sim {
     if (!problem && offer.shelter && !(slot === offer.slot && pattern === offer.pattern)) {
       const copy = { ...this.map, cells: this.map.cells.slice(), heights: this.map.heights.slice(), plinths: this.map.plinths.slice(), slots: this.map.slots.slice() };
       stampPlate(copy, pattern, slot, offer.feature, new Rng(1));
-      if (shelterSite(copy, slot) === null) problem = 'no room here for its shelter — turn it (R) or try another place';
+      if (shelterSite(copy, slot) === null) problem = 'no room here for its shelter — turn it or try another place';
     }
     this.placeCache.checks.set(key, problem);
     return problem;

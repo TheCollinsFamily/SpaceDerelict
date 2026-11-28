@@ -273,6 +273,12 @@ insectoid city.
       carries the `SPACE` key), on the surface Space = START THE WAVE. A held Space is one step (it must come up first),
       and a focused card never takes the press as its own click. The first wave opens on the surface. Logic:
       `src/ui/phaseKeys.ts` (`tests/phaseKeys.test.ts`); real page: `node tools/probes/space-steps.mjs <dev url> <out>`.
+    - **Every key is the player's** (Bruno, Nov 27 2026: "all keyboard commands should be remappable"; the rule is in
+      the repo's CLAUDE.md). One table holds every key action and its default: `src/meta/keys.ts`. Settings > KEYS shows
+      each row with a button that takes a new key. A key that another action has swaps with it, and Esc stays fixed.
+      Space is the step key between waves and the pause key during a wave (Bruno: "space to pause feels more
+      intuitive"). Z, X and V are 1×, 3× and 8× (1 to 5 are the unit groups). Words on screen name the key through
+      `src/ui/keyText.ts`. Tests: `tests/keys.test.ts`, and `tools/input-check.mjs` step 7 in the real page.
     - Shaped organs grow around the half-buried meteor.
     - THEME organs unlock limb groups and power them. Zone organs boost what they touch.
     - Unspent war and science are LOST when a wave starts; royal points are kept.

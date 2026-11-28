@@ -14,6 +14,9 @@ import { PLATE_FEATURES, checkPlacement, draftHeights, slotOfCell, turnedPattern
 import type { Sim } from '../sim/sim';
 import type { Renderer } from '../render/render';
 import './districtPlace.css';
+import { isKey } from '../meta/keys';
+import { loadSettings } from '../meta/storage';
+import { keyFor, withTurnKey } from './keyText';
 
 export interface PlacerDeps {
   sim: () => Sim;
@@ -64,7 +67,7 @@ export function installDistrictPlacer(deps: PlacerDeps): DistrictPlacer {
         <div class="pd-keys">Click a <b class="pd-green">green</b> slot · <b>R</b> turn · <b>Shift+R</b> / right-click turn back · <b>Esc</b> the cards</div>
         <div class="pd-btns">
           <button class="pd-ccw" title="Turn it the other way (Shift+R)">⟲ TURN</button>
-          <button class="pd-cw" title="Turn it a quarter (R)">TURN ⟳</button>
+          <button class="pd-cw" data-kt="turnPiece" data-kt-label="Turn it a quarter" title="Turn it a quarter (key ${keyFor('turnPiece')})">TURN ⟳</button>
           <button class="pd-back" title="Back to the three districts (Esc)">THE CARDS</button>
         </div>
       </div>
@@ -111,7 +114,8 @@ export function installDistrictPlacer(deps: PlacerDeps): DistrictPlacer {
     const free = slot !== null && sim.map.slots[slot] === null;
     const pat = pattern();
     const check = slot !== null ? checkPlacement(sim.map, pat, slot) : null;
-    const problem = problemAt(slot);
+    const raw = problemAt(slot);
+    const problem = raw === null ? null : withTurnKey(raw);
     deps.renderer().districtGhost = {
       slot, rows: pat.rows, free, ok: problem === null,
       heights: free && slot !== null ? draftHeights(sim.map, pat, slot, offer().feature) : null,
@@ -122,14 +126,14 @@ export function installDistrictPlacer(deps: PlacerDeps): DistrictPlacer {
     const turned = slot !== null && fitsTurned.includes(slot);
     const why = problem === null
       ? 'It fits here: click to put it down.'
-      : turned && !/turn it/.test(problem) ? `${cap(problem)} — it fits here turned (R).` : `${cap(problem)}.`;
+      : turned && !/turn it/.test(problem) ? `${cap(problem)} — it fits here turned (${keyFor('turnPiece')}).` : `${cap(problem)}.`;
     const whyEl = q('.pd-why');
     whyEl.textContent = why;
     whyEl.classList.toggle('ok', problem === null);
     const where = fits.length
       ? `${fits.length} green ${fits.length === 1 ? 'slot fits' : 'slots fit'} it this way round${fitsTurned.length ? `, ${fitsTurned.length} more turned` : ''}`
-      : `no slot fits it this way round: turn it (R) — ${fitsTurned.length} ${fitsTurned.length === 1 ? 'slot fits' : 'slots fit'} it turned`;
-    deps.hint(`PLACE ${name.toUpperCase()}: ${problem === null ? 'CLICK TO PUT IT DOWN' : problem.toUpperCase()} · ${where.toUpperCase()} · R TURNS IT · ESC: THE CARDS`);
+      : `no slot fits it this way round: turn it (${keyFor('turnPiece')}) — ${fitsTurned.length} ${fitsTurned.length === 1 ? 'slot fits' : 'slots fit'} it turned`;
+    deps.hint(`PLACE ${name.toUpperCase()}: ${problem === null ? 'CLICK TO PUT IT DOWN' : problem.toUpperCase()} · ${where.toUpperCase()} · ${keyFor('turnPiece')} TURNS IT · ESC: THE CARDS`);
     // Its picture, turned as it is now (on the slot it would take, for that slot's tile set).
     const at = free && slot !== null ? slot : offer().slot;
     const key = `${hand!.index}:${hand!.rot}:${at}`;
@@ -226,7 +230,7 @@ export function installDistrictPlacer(deps: PlacerDeps): DistrictPlacer {
     if (!live()) return;
     const tag = (ev.target as HTMLElement)?.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-    if ((ev.key === 'r' || ev.key === 'R') && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
+    if (isKey(loadSettings().keys, 'turnPiece', ev.key) && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
       ev.preventDefault();
       ev.stopPropagation();
       turn(ev.shiftKey ? -1 : 1);

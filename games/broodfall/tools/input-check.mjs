@@ -421,6 +421,66 @@ try {
   if (coreLv === 2) pass('clicking the meteor levels the core theme');
   else fail('core level', `coreLevel=${coreLv}`);
   await page.locator('#under-done').click();
+
+  // 7. Every key is the player's (Bruno, Nov 27 2026): Z X V set the speed, Space starts the wave between waves
+  //    and pauses during one, and a key given in Settings takes over.
+  const lit = () => page.evaluate(() => document.querySelector('#speed-box button.on')?.dataset.speed);
+  // 15 s: the surface draws again as the organ stage shuts, and a PC with no GPU is busy for seconds.
+  await page.waitForFunction(() => document.getElementById('under').classList.contains('hidden'), null, { timeout: 15000 });
+  await page.keyboard.press('x'); const s3 = await lit();
+  await page.keyboard.press('v'); const s8 = await lit();
+  await page.keyboard.press('z'); const s1 = await lit();
+  if (s3 === '3' && s8 === '8' && s1 === '1') pass('Z, X and V set the speed to 1×, 3× and 8×');
+  else fail('speed keys', `x=${s3} v=${s8} z=${s1}`);
+  await page.keyboard.press(' ');
+  await page.waitForFunction(() => window.broodfall.sim.phase === 'siege', null, { timeout: 3000 }).catch(() => {});
+  const phase = await page.evaluate(() => window.broodfall.sim.phase);
+  await page.keyboard.press(' ');
+  const paused = await lit();
+  const tp0 = await page.evaluate(() => window.broodfall.sim.time);
+  await page.waitForTimeout(400);
+  const tp1 = await page.evaluate(() => window.broodfall.sim.time);
+  await page.keyboard.press(' ');
+  const played = await lit();
+  if (phase === 'siege' && paused === '0' && tp0 === tp1 && played === '1') pass('Space starts the wave, then pauses it and plays it again');
+  else fail('space pause', `phase=${phase} paused=${paused} time ${tp0}->${tp1} played=${played}`);
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('#settings:not(.hidden)', { timeout: 15000 });
+  await page.locator('#settings [data-key="pause"]').click();
+  await page.keyboard.press('p');
+  const shown = await page.locator('#settings [data-key="pause"]').innerText();
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => document.getElementById('settings').classList.contains('hidden'), null, { timeout: 15000 });
+  await page.keyboard.press('p'); const pP = await lit();
+  await page.keyboard.press('p'); const pP2 = await lit();
+  await page.keyboard.press(' '); const pSpace = await lit();
+  if (shown === 'P' && pP === '0' && pP2 === '1' && pSpace === '1') pass('a pause key given in Settings pauses, and Space no longer does');
+  else fail('remap pause', `shown=${shown} p=${pP} p again=${pP2} space=${pSpace}`);
+
+  // 8. The organ stage at the largest text size, in a full-screen window (Bruno, Nov 27 2026: "graphics on the
+  //    underground build are getting misplaced on a full-screen chrome session"): the canvas that draws the living
+  //    organs lies exactly over the grid of cells.
+  // The first page is shut first: two pages of the game at once need twice the memory.
+  await page.close();
+  const big = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+  await big.addInitScript(() => { try { localStorage.setItem('broodfall-settings', JSON.stringify({ textScale: 1.3 })); } catch { /* */ } });
+  await big.goto('http://localhost:' + PORT + '/?seed=7&autostart=1', { waitUntil: 'load' });
+  await big.waitForSelector('#stage canvas', { timeout: BOOT_MS });
+  await big.evaluate(() => { window.broodfall.sim.chyme = 500; });
+  await big.locator('#open-under').click();
+  await big.waitForSelector('#under:not(.hidden)', { timeout: 15000 });
+  await big.waitForTimeout(800);
+  const fit = await big.evaluate(() => {
+    const g = document.getElementById('under-grid');
+    const c = document.querySelector('#under .under-alive');
+    if (!g || !c) return null;
+    const gr = g.getBoundingClientRect(), cr = c.getBoundingClientRect();
+    const z = gr.width / g.offsetWidth;
+    return { z, dx: cr.left - (gr.left + g.clientLeft * z), dy: cr.top - (gr.top + g.clientTop * z), dw: cr.width - g.clientWidth * z, dh: cr.height - g.clientHeight * z };
+  });
+  await big.close();
+  if (fit && fit.z > 1.2 && [fit.dx, fit.dy, fit.dw, fit.dh].every((v) => Math.abs(v) <= 1.5)) pass(`the organ stage's living pictures lie on their cells at text size ${fit.z.toFixed(2)}`);
+  else fail('organ canvas', JSON.stringify(fit));
 } catch (err) {
   fail('harness', err.message);
 } finally {

@@ -177,3 +177,16 @@ PC before a release.
 - A skirmish won by hand to 12 waves, with its drafts after waves 3, 6 and 9.
 - YOKE's live mind in the page itself (the page display passed with a faked stream on Nov 26).
 - The release build: there is no packaged desktop game (no installer, no Steamworks) yet.
+
+## Nov 28: the organ pictures, and every key remappable
+
+- **Organ pictures off their cells.** Bruno saw this in a full-screen Chrome window. The cause was the text size, not
+  the window. Text size zooms the organ card, and the canvas that draws the living organs mixed zoomed and unzoomed
+  pixels, so it came out 1.15 to 1.3 times too big. `src/ui/underAlive.ts` converts the sizes now. Input check
+  step 8 opens the stage at text size 1.30 in a 1920 by 1080 window and checks the canvas against the grid.
+- **Every key remappable** (Bruno: "all keyboard commands should be remappable"; the rule is in the repo CLAUDE.md).
+  One table, `src/meta/keys.ts`, holds 36 actions. Settings > KEYS shows each one with a button. Space pauses during
+  a wave and steps between waves. Z, X and V set 1×, 3× and 8×. Input check step 7 tests the speed keys, the Space
+  pause and a pause key given in Settings.
+- **Checks:** all 92 test files pass, the input check passes (22 steps), and the visual check passes. The checks keep
+  Chromium in `~/.local/share/ms-playwright`, because a cleanup deleted `~/.cache/ms-playwright` two times.

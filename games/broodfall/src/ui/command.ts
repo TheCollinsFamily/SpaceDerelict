@@ -20,6 +20,16 @@ import type { IsoRenderer } from '../render/isoRender';
 import type { Sim } from '../sim/sim';
 import { BALANCE } from '../../content/data';
 import type { Broodling, Broodmother, Harrier, Infestor, Shelter, SporeMule, UnitOrder } from '../sim/types';
+import { actionOf, isKey } from '../meta/keys';
+import { loadSettings } from '../meta/storage';
+import { kbd, keyFor } from './keyText';
+
+/** The order keys and the orders they give (the keys are the player's: src/meta/keys.ts). */
+const ORDERS = {
+  orderMove: 'move', orderAttack: 'attack', orderHold: 'hold', orderReturn: 'return', orderGuard: 'guard',
+  orderMode: 'mode', orderNet: 'net', orderDeploy: 'deploy', orderInfest: 'infest',
+} as const;
+const GROUPS = ['group1', 'group2', 'group3', 'group4', 'group5'] as const;
 
 export interface CommandHooks {
   renderer: () => IsoRenderer | null;
@@ -57,25 +67,25 @@ export function installCommand(canvas: HTMLCanvasElement, hooks: CommandHooks): 
   panel.innerHTML = `
     <div id="unit-cmd-what"></div>
     <div class="unit-cmd-row">
-      <button data-cmd="move" title="Move: then right-click or click a street (Shift queues)">MOVE <kbd>M</kbd></button>
-      <button data-cmd="attack" title="Attack-move: then click a street; they fight what they meet on the way">ATTACK <kbd>A</kbd></button>
-      <button data-cmd="hold" title="Hold position: fight only what comes within bite reach">HOLD <kbd>H</kbd></button>
+      <button data-cmd="move" title="Move: then right-click or click a street (Shift queues)">MOVE <kbd data-k="orderMove">${keyFor('orderMove')}</kbd></button>
+      <button data-cmd="attack" title="Attack-move: then click a street; they fight what they meet on the way">ATTACK <kbd data-k="orderAttack">${keyFor('orderAttack')}</kbd></button>
+      <button data-cmd="hold" title="Hold position: fight only what comes within bite reach">HOLD <kbd data-k="orderHold">${keyFor('orderHold')}</kbd></button>
     </div>
     <div class="unit-cmd-row">
-      <button data-cmd="return" title="Back to the body, and guard it">BODY <kbd>B</kbd></button>
-      <button data-cmd="guard" title="Clear their orders: back to their post (a Broodmother's side, or the Pit's rally point)">GUARD <kbd>G</kbd></button>
+      <button data-cmd="return" title="Back to the body, and guard it">BODY <kbd data-k="orderReturn">${keyFor('orderReturn')}</kbd></button>
+      <button data-cmd="guard" title="Clear their orders: back to their post (a Broodmother's side, or the Pit's rally point)">GUARD <kbd data-k="orderGuard">${keyFor('orderGuard')}</kbd></button>
     </div>
     <div class="unit-cmd-row" id="unit-cmd-mother">
-      <button data-cmd="mode" title="Brood mode: she stays and broods warriors. Fight mode: she walks, bites and nets.">BROOD / FIGHT <kbd>T</kbd></button>
-      <button data-cmd="net" title="Throw her net: then click where (fight mode, in reach, off cooldown)">NET <kbd>N</kbd></button>
+      <button data-cmd="mode" title="Brood mode: she stays and broods warriors. Fight mode: she walks, bites and nets.">BROOD / FIGHT <kbd data-k="orderMode">${keyFor('orderMode')}</kbd></button>
+      <button data-cmd="net" title="Throw her net: then click where (fight mode, in reach, off cooldown)">NET <kbd data-k="orderNet">${keyFor('orderNet')}</kbd></button>
     </div>
     <div class="unit-cmd-row" id="unit-cmd-mule">
-      <button data-cmd="deploy" title="Root here: the Spore Mule becomes a creep node where it stands, even past your creep">DEPLOY <kbd>D</kbd></button>
+      <button data-cmd="deploy" title="Root here: the Spore Mule becomes a creep node where it stands, even past your creep">DEPLOY <kbd data-k="orderDeploy">${keyFor('orderDeploy')}</kbd></button>
     </div>
     <div class="unit-cmd-row" id="unit-cmd-infestor">
-      <button data-cmd="infest" title="Infest: then click a SHELTER; the Infestor walks to its door and burrows in (it is open to the defenders while it does). Right-clicking a shelter does it too">INFEST <kbd>I</kbd></button>
+      <button data-cmd="infest" title="Infest: then click a SHELTER; the Infestor walks to its door and burrows in (it is open to the defenders while it does). Right-clicking a shelter does it too">INFEST <kbd data-k="orderInfest">${keyFor('orderInfest')}</kbd></button>
     </div>
-    <div id="unit-cmd-help">right-click a street: move · Shift: queue · Ctrl+1-5: group · Esc: clear</div>`;
+    <div id="unit-cmd-help">right-click a street: move · Shift: queue · Ctrl + ${keyFor('group1')}–${keyFor('group5')}: group · Esc: clear</div>`;
   (document.getElementById('inspect')?.parentElement ?? canvas.parentElement ?? document.body).appendChild(panel);
   const what = panel.querySelector('#unit-cmd-what') as HTMLDivElement;
   const motherRow = panel.querySelector('#unit-cmd-mother') as HTMLDivElement;
@@ -275,9 +285,9 @@ export function installCommand(canvas: HTMLCanvasElement, hooks: CommandHooks): 
   window.addEventListener('keydown', (ev) => {
     const tag = (ev.target as HTMLElement | null)?.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA' || !hooks.renderer()) return;
-    const k = ev.key.toLowerCase();
-    // R with a Brood Pit or Den's panel open: select its brood (and its Broodmothers).
-    if (k === 'r' && selected.size === 0 && hooks.idle()) {
+    const keys = loadSettings().keys; // every key here is the player's to change (src/meta/keys.ts)
+    // The brood key with a Brood Pit or Den's panel open: select its brood (and its Broodmothers).
+    if (isKey(keys, 'selectBrood', ev.key) && selected.size === 0 && hooks.idle()) {
       const insp = hooks.inspected();
       const sim = hooks.sim();
       const t = insp === null ? undefined : sim.towers.find((x) => x.id === insp);
@@ -288,12 +298,14 @@ export function installCommand(canvas: HTMLCanvasElement, hooks: CommandHooks): 
         return;
       }
     }
-    if (/^[1-5]$/.test(ev.key)) {
+    const group = actionOf(keys, ev.key, GROUPS);
+    if (group) {
+      const n = group.slice(-1);
       if (ev.ctrlKey || ev.metaKey) {
-        if (selected.size > 0) { groups.set(ev.key, [...selected]); hooks.hint(`GROUP ${ev.key} SET (${selected.size})`); ev.preventDefault(); }
+        if (selected.size > 0) { groups.set(n, [...selected]); hooks.hint(`GROUP ${n} SET (${selected.size})`); ev.preventDefault(); }
         return;
       }
-      const g = groups.get(ev.key);
+      const g = groups.get(n);
       if (g && !ev.altKey) {
         const alive = new Set(units().map((u) => u.id));
         selected.clear();
@@ -310,8 +322,8 @@ export function installCommand(canvas: HTMLCanvasElement, hooks: CommandHooks): 
       return;
     }
     if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
-    const map: Record<string, string> = { m: 'move', a: 'attack', h: 'hold', b: 'return', g: 'guard', t: 'mode', n: 'net', d: 'deploy', i: 'infest' };
-    if (map[k]) { run(map[k]); ev.preventDefault(); ev.stopImmediatePropagation(); }
+    const order = actionOf(keys, ev.key, Object.keys(ORDERS) as Array<keyof typeof ORDERS>);
+    if (order) { run(ORDERS[order]); ev.preventDefault(); ev.stopImmediatePropagation(); }
   }, { capture: true });
 
   const consumeClick = (clientX: number, clientY: number, pointerType: string, shift: boolean): boolean => {
@@ -401,8 +413,8 @@ export function installCommand(canvas: HTMLCanvasElement, hooks: CommandHooks): 
     const fighters = ms.filter((m) => m.mode === 'fight');
     const cd = fighters.length ? Math.min(...fighters.map((m) => m.netCd)) : Infinity;
     netBtn.disabled = !(cd <= 0);
-    netBtn.innerHTML = cd <= 0 ? 'NET <kbd>N</kbd>' : fighters.length ? `NET ${Math.ceil(cd)}s` : 'NET (fight mode)';
-    modeBtn.innerHTML = offCreep ? 'BROOD: NEEDS CREEP' : ms.length && ms.every((m) => m.mode === 'fight') ? 'TO BROOD <kbd>T</kbd>' : 'TO FIGHT <kbd>T</kbd>';
+    netBtn.innerHTML = cd <= 0 ? `NET ${kbd('orderNet')}` : fighters.length ? `NET ${Math.ceil(cd)}s` : 'NET (fight mode)';
+    modeBtn.innerHTML = offCreep ? 'BROOD: NEEDS CREEP' : ms.length && ms.every((m) => m.mode === 'fight') ? `TO BROOD ${kbd('orderMode')}` : `TO FIGHT ${kbd('orderMode')}`;
     panel.querySelectorAll('button[data-cmd]').forEach((b) => {
       b.classList.toggle('on', (b as HTMLElement).dataset.cmd === armed);
     });

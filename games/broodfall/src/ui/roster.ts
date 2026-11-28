@@ -9,7 +9,7 @@
  *   the body                    they come home
  *   anywhere else               they go there, fighting what they meet, and stay
  *
- * Right-click or Esc cancels. Keys: F1..F5 the portraits in order, ` (backquote) ALL. Each kind that answers
+ * Right-click or Esc cancels. Keys (the player's to change, src/meta/keys.ts): F1..F5 the portraits in order, ` (backquote) ALL. Each kind that answers
  * alerts has an AUTO toggle under its portrait. ALERTS (a science party, an engineer, a field station, an outpost
  * under attack) show as toasts under the roster with SEND: one click sends the right units (src/sim/groups.ts).
  * The individual select / box / command panel (src/ui/command.ts) stays for players who want it.
@@ -18,6 +18,9 @@ import type { IsoRenderer } from '../render/isoRender';
 import type { Sim } from '../sim/sim';
 import { STANCES, STANCE_KINDS, UNIT_KINDS, type UnitKind, type Who } from '../sim/groups';
 import { artUrl } from '../render/art';
+import { actionOf, type KeyAction } from '../meta/keys';
+import { loadSettings } from '../meta/storage';
+import { kbd, keyFor } from './keyText';
 
 export interface RosterHooks {
   renderer: () => IsoRenderer | null;
@@ -109,13 +112,13 @@ export function installRoster(hooks: RosterHooks): Roster {
   const rebuild = (present: Array<{ kind: UnitKind; n: number }>): void => {
     const sim = hooks.sim();
     const fighters = present.filter((p) => UNIT_KINDS.find((k) => k.kind === p.kind)!.inAll).reduce((n, p) => n + p.n, 0);
-    let html = fighters ? `<button class="ur-btn ur-all" data-who="all" title="ALL your fighters (not mules or Infestors). Then click where. Key: \`"><span class="ur-all-txt">ALL <b>${fighters}</b></span></button>` : '';
+    let html = fighters ? `<button class="ur-btn ur-all" data-who="all" title="ALL your fighters (not mules or Infestors). Then click where. Key: ${keyFor('selectAll')}"><span class="ur-all-txt">ALL <b>${fighters}</b></span></button>` : '';
     present.forEach((p, i) => {
       const k = UNIT_KINDS.find((x) => x.kind === p.kind)!;
       const answers = STANCE_KINDS.includes(p.kind);
       const st = STANCES.find((x) => x.stance === sim.groups.stance[p.kind])!;
-      html += `<div class="ur-slot"><button class="ur-btn" data-who="${p.kind}" title="All your ${k.name.toLowerCase()}. Then click where. Key: F${i + 1}">`
-        + `<span class="ur-face" style="${portraitStyle(p.kind)}"></span><b class="ur-n">${p.n}</b><kbd>F${i + 1}</kbd></button>`
+      html += `<div class="ur-slot"><button class="ur-btn" data-who="${p.kind}" title="All your ${k.name.toLowerCase()}. Then click where. Key: ${keyFor(`kind${i + 1}` as KeyAction)}">`
+        + `<span class="ur-face" style="${portraitStyle(p.kind)}"></span><b class="ur-n">${p.n}</b>${kbd(`kind${i + 1}` as KeyAction)}</button>`
         // The stance: what they do by themselves. A click goes to the next one (OFF, DEFEND, HUNT, RAID).
         + (answers ? `<button class="ur-auto st-${st.stance}${st.stance !== 'off' ? ' on' : ''}" data-auto="${p.kind}" title="${st.tip}. Click for the next: ${STANCES.map((x) => x.name).join(' / ')}">${st.name}</button>` : '')
         + '</div>';
@@ -145,10 +148,11 @@ export function installRoster(hooks: RosterHooks): Roster {
     if (ev.key === 'Escape' && armed) { arm(null); ev.preventDefault(); ev.stopImmediatePropagation(); return; }
     if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
     const present = kindsPresent();
-    if (ev.key === '`') { if (present.length) { arm('all'); ev.preventDefault(); ev.stopImmediatePropagation(); } return; }
-    const f = /^F([1-5])$/.exec(ev.key);
-    if (f) {
-      const p = present[Number(f[1]) - 1];
+    // The keys are the player's to change (src/meta/keys.ts).
+    const a = actionOf(loadSettings().keys, ev.key, ['selectAll', 'kind1', 'kind2', 'kind3', 'kind4', 'kind5'] as const);
+    if (a === 'selectAll') { if (present.length) { arm('all'); ev.preventDefault(); ev.stopImmediatePropagation(); } return; }
+    if (a) {
+      const p = present[Number(a.slice(-1)) - 1];
       if (p) { arm(p.kind); ev.preventDefault(); ev.stopImmediatePropagation(); }
     }
   }, { capture: true });

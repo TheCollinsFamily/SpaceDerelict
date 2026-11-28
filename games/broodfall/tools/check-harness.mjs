@@ -5,7 +5,9 @@
  *
  * - The same browser on every PC: Playwright's own Chromium, the build that the @playwright/test version in
  *   package-lock.json pins. No fallback to an installed Chrome, because another browser is another test. If it is
- *   not installed, the check stops and gives the command that installs it.
+ *   not installed, the check stops and gives the command that installs it (tools/install-browser.mjs). On Linux it
+ *   lives in ~/.local/share/ms-playwright, not in ~/.cache, because a cleanup deleted ~/.cache/ms-playwright twice
+ *   (Nov 27 2026, Bruno: "download it again in a place that can't be deleted").
  * - The same launch: headless, no extra flags, on every OS.
  * - The same server: `vite preview` of the built game on BROODFALL_PORT (5199), started by node itself (no npx, no
  *   shell) and stopped as a whole process tree.
@@ -18,7 +20,11 @@ import { spawn, execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { chromium } from '@playwright/test';
+import { browsersPath } from './browser-path.mjs';
+
+// Where Playwright keeps its Chromium (tools/browser-path.mjs), set before Playwright loads: it reads the path once.
+process.env.PLAYWRIGHT_BROWSERS_PATH = browsersPath();
+const { chromium } = await import('@playwright/test');
 
 /** The port the built game is served on: its own for every session that runs beats at the same time. */
 export const PORT = Number(process.env.BROODFALL_PORT || 5199);
@@ -80,7 +86,7 @@ export async function launchBrowser() {
     browser = await chromium.launch();
   } catch (err) {
     if (/Executable doesn't exist/.test(err.message)) {
-      throw new Error('Playwright\'s Chromium is not installed on this PC. In games/broodfall run: npx playwright install chromium (the same build on every PC; the checks use no other browser)');
+      throw new Error(`Playwright's Chromium is not installed in ${browsersPath()}. In games/broodfall run: node tools/install-browser.mjs (the same build on every PC; the checks use no other browser)`);
     }
     throw err;
   }

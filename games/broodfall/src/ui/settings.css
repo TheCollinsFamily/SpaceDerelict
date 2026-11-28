@@ -65,3 +65,14 @@
 #settings .st-exit .st-btn { font-size: 14px; padding: 9px 16px; letter-spacing: .08em; }
 #settings .st-exit .st-btn[data-act="resume"] { border-color: #e9eef0; }
 #settings .st-exit small { flex-basis: 100%; opacity: .6; }
+/* Every key, the player's to change (Nov 27 2026, Bruno: "all keyboard commands should be remappable"; src/meta/keys.ts). */
+#settings .st-keymap { margin-top: 14px; }
+#settings .st-keymap h3 small { display: inline; margin-left: 10px; letter-spacing: 0.5px; font-size: 11px; color: rgba(233, 238, 240, 0.5); }
+#settings .st-kcols { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 18px; align-items: start; }
+@media (max-width: 1000px) { #settings .st-kcols { grid-template-columns: 1fr 1fr; } }
+#settings .st-ksec h4 { margin: 6px 0 2px; font-size: 11px; font-weight: 400; letter-spacing: 2px; color: rgba(233, 238, 240, 0.75); }
+#settings .st-knote { margin: 0 0 4px; font-size: 11px; color: rgba(233, 238, 240, 0.5); }
+#settings .st-krow { padding: 3px 0; font-size: 13px; }
+#settings .st-key { min-width: 64px; }
+#settings .st-key.unset { border-style: dashed; color: #ffb38a; }
+#settings .st-kwarn { color: #ffb38a; font-size: 12px; }

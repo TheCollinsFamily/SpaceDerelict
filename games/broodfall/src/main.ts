@@ -30,8 +30,9 @@ import { canLandOnBoard, endingFor, landingBoardSeed, landingDecision, landingSe
 import { ConsoleMenu } from './ui/menu';
 import { addRunButton, installEdgeScroll, markSpeed, openSettings, settingsOpen } from './ui/settings';
 import { addCodexRunButton, codexOpen, openCodex } from './ui/codex';
-import { SpaceLatch, spaceStep } from './ui/phaseKeys';
-import { turnOf } from './meta/settings';
+import { SpaceLatch, spaceStep, speedKey } from './ui/phaseKeys';
+import { actionOf, isKey, keyLabel } from './meta/keys';
+import { keyFor } from './ui/keyText';
 import { loadSettings, markSacrificeExplained, sacrificeExplained } from './meta/storage';
 import { explainerOpen, openSacrificeExplainer, shouldExplainSacrifice } from './ui/sacrificeExplainer';
 import { ORDER_CHOICES, choiceFrom, directiveFor, loadOrderChoice, orderText, saveOrderChoice, type OrderChoice } from './meta/skirmishOrder';
@@ -216,6 +217,8 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 const auto = AUTO ? new Autoplayer(SEED + 1) : null;
 // The address's ?speed= wins; otherwise the speed the settings say a deployment starts at.
 let speed = RESUME ? RESUME.speed : params.has('speed') && Number.isFinite(START_SPEED) && START_SPEED >= 0 ? START_SPEED : loadSettings().speed;
+/** The speed a pause stopped (the P key gives it back: src/ui/phaseKeys.ts speedKey). */
+let speedBeforePause = speed > 0 ? speed : 1;
 /** The run's clock is going. Behind the cinematic it waits until the film is over. */
 let started = AUTOSTART && !PLAY_INTRO;
 let debriefShown = false;
@@ -357,6 +360,7 @@ const hud = new Hud({
     hud.setHint(r.ok ? 'CROWNED: every other limb within 120px takes 30% less harm and hits 25% harder' : String(r.err).toUpperCase());
   },
   onSpeed(mult) {
+    if (mult === 0 && speed > 0) speedBeforePause = speed;
     speed = mult;
   },
   onRestart() {
@@ -446,13 +450,13 @@ function updateHint(): void {
   } else if (selectedCard !== null) {
     const fam = sim.hand[selectedCard]?.family;
     const span = fam && isMultiCell(towerSpec(fam)) ? towerSpec(fam) : undefined;
-    const turn = ' · RIGHT-CLICK or R turns it a quarter · Esc cancels';
+    const turn = ` · RIGHT-CLICK or ${keyFor('turnPiece')} turns it a quarter · Esc cancels`;
     // "Feed it in" only when a limb stands to eat, and in mission 1 only once eating is revealed (Nov 26 2026 polish).
     const canEat = sim.towers.some((t) => t.family !== 'tap') && (!FIRST || document.body.classList.contains('m1-cannibal'));
     hud.setHint(selectedIsDirectional()
       ? `place it — it faces ${placeFacing ?? (fam && towerSpec(fam).directional ? 'the nearest gate' : 'the way it fits')}${turn}`
       : span
-        ? `a BIG limb: it needs ${footprintName(span)} of one flat creeped roof${placeFacing ? ` · faces ${placeFacing}` : ''}${turn} · ${loadSettings().keys.turnLeft.toUpperCase()} and ${loadSettings().keys.turnRight.toUpperCase()} turn the view`
+        ? `a BIG limb: it needs ${footprintName(span)} of one flat creeped roof${placeFacing ? ` · faces ${placeFacing}` : ''}${turn} · ${keyLabel(loadSettings().keys.turnLeft)} and ${keyLabel(loadSettings().keys.turnRight)} turn the view`
       : fam === 'spine' || fam === 'swamp'
         ? `plug a street — the swarm must go through it${turn}`
         : `place on a creeped block by a street — higher roofs reach further (+10% a level)${placeFacing ? ` · faces ${placeFacing}` : ''}${turn}${canEat ? ' — or click one of your limbs to feed it in' : ''}`);
@@ -463,9 +467,9 @@ function updateHint(): void {
       ? 'demo mode: the asset is piloting itself'
       // A draft is open over the board (it said WAVE SETUP: place limbs, under the district cards: bug hunt, Nov 22 2026).
       : sim.phase === 'draft'
-        ? 'THE BODY IS READY TO GROW: choose a district above, then place it on the board (R turns it) — the wave setup comes after'
+        ? `THE BODY IS READY TO GROW: choose a district above, then place it on the board (${keyFor('turnPiece')} turns it) — the wave setup comes after`
       : sim.phase === 'growth' && sim.waveNumber > 0
-        ? 'WAVE SETUP: place limbs, then START THE WAVE (Space) — unspent war and science are lost when it starts (chyme is kept)'
+        ? `WAVE SETUP: place limbs, then START THE WAVE (${keyFor('step')}) — unspent war and science are lost when it starts (chyme is kept)`
         : 'select a limb card below, then click a creeped block by a street — the assault forms at the glowing gate');
   }
 }
@@ -509,12 +513,12 @@ function coachText(): string {
   if (sim.waveNumber === 0 && sim.phase === 'growth') {
     if (!sim.towers.length) return 'YOUR FIRST LIMB: pick a card below, then click a dark red block beside a street — the townsfolk will march in from the glowing gate';
     const affordable = sim.hand.some((c) => c.free || sim.canAfford(towerSpec(c.family).cost));
-    if (!affordable) return 'GOOD. That is all the meat you have: kills pay more. START THE WAVE (top right, or Space) when you are ready';
-    if (sim.towers.length < 3) return 'GOOD. Grow more limbs beside the street they will walk down, then START THE WAVE (Space)';
-    return 'READY? START THE WAVE (top right, or Space)';
+    if (!affordable) return `GOOD. That is all the meat you have: kills pay more. START THE WAVE (top right, or ${keyFor('step')}) when you are ready`;
+    if (sim.towers.length < 3) return `GOOD. Grow more limbs beside the street they will walk down, then START THE WAVE (${keyFor('step')})`;
+    return `READY? START THE WAVE (top right, or ${keyFor('step')})`;
   }
   if (sim.waveNumber === 1 && sim.phase === 'siege') return 'Your limbs fight on their own. Every body the creep digests pays WAR meat for cards (top left), and ◆ CHYME for organs';
-  if (sim.waveNumber === 1 && sim.phase === 'growth' && sim.towers.length < 5) return 'Wave cleared. Place more limbs with the meat you earned — the next wave is bigger. Space starts it';
+  if (sim.waveNumber === 1 && sim.phase === 'growth' && sim.towers.length < 5) return `Wave cleared. Place more limbs with the meat you earned — the next wave is bigger. ${keyFor('step')} starts it`;
   // Mission 1 is war only (Collins, Oct 30 2026): nothing evolves here, so the panel is about health and targeting.
   if (sim.waveNumber === 2 && sim.phase === 'siege') return 'Click one of your limbs to see it: its health, what it does, and what it shoots first';
   return '';
@@ -622,7 +626,7 @@ function renderDraft(): void {
   if (!sim.pendingDraft) return;
   draftOptionsEl.innerHTML = '';
   const sub = document.getElementById('draft-sub');
-  if (sub) sub.textContent = placer ? 'Choose the district to consume next, then place it on the board: R turns it. New streets mean new gates.' : 'Choose the district to consume next. New streets mean new gates.';
+  if (sub) sub.textContent = placer ? `Choose the district to consume next, then place it on the board: ${keyFor('turnPiece')} turns it. New streets mean new gates.` : 'Choose the district to consume next. New streets mean new gates.';
   sim.pendingDraft.forEach((offer, i) => {
     const card = document.createElement('div');
     card.className = 'draft-option';
@@ -1629,18 +1633,24 @@ async function boot(): Promise<void> {
   window.addEventListener('pointerup', () => { dragFrom = null; });
   window.addEventListener('keydown', (ev) => {
     if (!(renderer instanceof IsoRenderer) || (ev.target as HTMLElement).tagName === 'INPUT') return;
+    if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
     const step = 90;
-    // Q and E turn the board a quarter turn: what stands behind a block is seen from the other side.
-    const turn = turnOf(loadSettings(), ev.key); // Q and E unless the settings say other keys
-    if (turn) renderer.turnBy(turn);
-    else if ((ev.key === 'c' || ev.key === 'C') && !ev.ctrlKey && !ev.metaKey && started && !debriefShown && !settingsOpen()) openRunCodex();
-    // R turns the limb in hand a quarter (Shift + R the other way): its footprint and its field of fire.
-    else if ((ev.key === 'r' || ev.key === 'R') && !ev.ctrlKey && !ev.metaKey && selectedCard !== null) turnInHand(null, ev.shiftKey);
-    else if (ev.key === 'Home') renderer.resetView();
-    else if (ev.key === 'ArrowLeft') renderer.panBy(step, 0);
-    else if (ev.key === 'ArrowRight') renderer.panBy(-step, 0);
-    else if (ev.key === 'ArrowUp') renderer.panBy(0, step);
-    else if (ev.key === 'ArrowDown') renderer.panBy(0, -step);
+    // Every key here is the player's to change (src/meta/keys.ts; Settings > Keys).
+    const a = actionOf(loadSettings().keys, ev.key, ['turnLeft', 'turnRight', 'codex', 'turnPiece', 'home', 'panLeft', 'panRight', 'panUp', 'panDown'] as const);
+    // The turn keys turn the board a quarter turn: what stands behind a block is seen from the other side.
+    if (a === 'turnLeft') renderer.turnBy(-1);
+    else if (a === 'turnRight') renderer.turnBy(1);
+    else if (a === 'codex' && started && !debriefShown && !settingsOpen()) openRunCodex();
+    // The turn-piece key turns the limb in hand a quarter (with Shift the other way): its footprint and its field of fire.
+    else if (a === 'turnPiece' && selectedCard !== null) turnInHand(null, ev.shiftKey);
+    else if (a === 'home') renderer.resetView();
+    else if (a === 'panLeft') renderer.panBy(step, 0);
+    else if (a === 'panRight') renderer.panBy(-step, 0);
+    else if (a === 'panUp') renderer.panBy(0, step);
+    else if (a === 'panDown') renderer.panBy(0, -step);
+    else return;
+    // An arrow key or Space must not also scroll the page.
+    ev.preventDefault();
   });
   // The same, for a player who has not found the keys.
   const viewButton = (id: string, act: (r: IsoRenderer) => void): void => {
@@ -1796,9 +1806,9 @@ async function boot(): Promise<void> {
   // Space is ONE step forward between waves (src/ui/phaseKeys.ts): the organ stage -> the surface (place limbs) ->
   // the wave. One press one step: it must come up before it can step again.
   const spaceLatch = new SpaceLatch();
-  window.addEventListener('keyup', (ev) => { if (ev.key === ' ') spaceLatch.release(); });
+  window.addEventListener('keyup', (ev) => { if (isKey(loadSettings().keys, 'step', ev.key)) spaceLatch.release(); });
   window.addEventListener('keydown', (ev) => {
-    if (ev.key !== ' ' || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    if (!isKey(loadSettings().keys, 'step', ev.key) || ev.ctrlKey || ev.metaKey || ev.altKey) return;
     if ((ev.target as HTMLElement).tagName === 'INPUT' || (ev.target as HTMLElement).tagName === 'TEXTAREA') return;
     const step = spaceStep({ started, auto: AUTO, blocked: debriefShown || settingsOpen() || codexOpen(), underOpen: under.open, phase: sim.phase, outcome: sim.outcome });
     if (!step) return;
@@ -1808,6 +1818,22 @@ async function boot(): Promise<void> {
     (document.activeElement as HTMLElement | null)?.blur?.();
     if (step === 'surface') document.getElementById('under-done')!.click();
     else callEarlyBtn.click();
+  });
+  // The speed keys: Z X V are the 1× 3× 8× buttons, and Space pauses and plays again when it has no step to take (the
+  // step listener above takes it first, and marks it taken). All of them are the player's to change (src/meta/keys.ts).
+  window.addEventListener('keydown', (ev) => {
+    if (ev.ctrlKey || ev.metaKey || ev.altKey || ev.repeat || ev.defaultPrevented) return;
+    const tag = (ev.target as HTMLElement).tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+    if (!started || AUTO || debriefShown || settingsOpen() || codexOpen() || under.open || sim.outcome !== 'playing') return;
+    const next = speedKey(loadSettings().keys, ev.key, speed, speedBeforePause);
+    if (next === null) return;
+    ev.preventDefault();
+    // A focused button must not take the key as its own click as well.
+    (document.activeElement as HTMLElement | null)?.blur?.();
+    if (next === 0 && speed > 0) speedBeforePause = speed;
+    speed = next;
+    markSpeed(speed);
   });
 
   // The hint line says what to do from the first second (it was empty until the first action).

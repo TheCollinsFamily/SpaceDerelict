@@ -36,17 +36,17 @@
       <div id="phase-box">
         <div id="phase-name">GROWTH</div>
         <div id="wave-info">WAVE 0 · TIER 0</div>
-        <button id="call-early" title="Space">START THE WAVE ▸ <kbd>SPACE</kbd></button>
+        <button id="call-early" data-kt="step" data-kt-label="Start the wave" title="Start the wave">START THE WAVE ▸ <kbd data-k="step">SPACE</kbd></button>
       </div>
       <div id="dials">
         <div class="dial" id="dial-threat"><span>THREAT</span><b>0</b></div>
         <div class="dial" id="dial-interest"><span>INTEREST</span><b>0</b></div>
       </div>
       <div id="speed-box">
-        <button data-speed="0">❚❚</button>
-        <button data-speed="1" class="on">1×</button>
-        <button data-speed="3">3×</button>
-        <button data-speed="8">8×</button>
+        <button data-speed="0" data-kt="pause" data-kt-label="Pause" title="Pause">❚❚</button>
+        <button data-speed="1" class="on" data-kt="speed1" data-kt-label="Speed 1×" title="Speed 1×">1×</button>
+        <button data-speed="3" data-kt="speed3" data-kt-label="Speed 3×" title="Speed 3×">3×</button>
+        <button data-speed="8" data-kt="speed8" data-kt-label="Speed 8×" title="Speed 8×">8×</button>
       </div>
     </header>
 
@@ -66,7 +66,7 @@
         <button id="view-turn-left" title="Turn the view a quarter turn (Q)">&#x27F2; Q</button>
         <button id="view-turn-right" title="Turn the view a quarter turn the other way (E)">E &#x27F3;</button>
         <button id="view-home" title="Frame the whole body again (Home)">HOME</button>
-        <button id="place-turn" class="hidden" title="Turn the limb in hand a quarter: its footprint and its aim (R, right-click, or Shift + wheel)">&#x27F3; TURN LIMB (R)</button>
+        <button id="place-turn" class="hidden" data-kt="turnPiece" data-kt-label="Turn the limb in hand a quarter: its footprint and its aim (or right-click, or Shift + wheel)" title="Turn the limb in hand a quarter">&#x27F3; TURN LIMB (<kbd data-k="turnPiece">R</kbd>)</button>
         <span id="view-help">wheel: zoom &middot; Shift-drag or arrows: move</span>
       </div>
       <div id="hint"></div>
@@ -123,7 +123,7 @@
             </div>
             <div id="under-note">Organs cost ◆ CHYME: earned from every body the creep digests and every wave cleared, and KEPT. War and science are for limbs.</div>
             <div id="under-meat"></div>
-            <button id="under-done" class="screen-btn" title="Space">TO THE SURFACE — PLACE LIMBS ▲ <kbd>SPACE</kbd></button>
+            <button id="under-done" class="screen-btn" data-kt="step" data-kt-label="To the surface" title="To the surface">TO THE SURFACE — PLACE LIMBS ▲ <kbd data-k="step">SPACE</kbd></button>
           </div>
           <div id="under-left">
             <div id="under-palette"></div>

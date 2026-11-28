@@ -1,3 +1,5 @@
+import { actionOf, type KeyMap } from '../meta/keys';
+
 /**
  * What Space does between waves: ONE step forward (Collins, Nov 22 2026: "space should go from the organ menu to the
  * phase set up and the ui should reflect this right now it says start wave").
@@ -39,4 +41,18 @@ export class SpaceLatch {
     return true;
   }
   release(): void { this.down = false; }
+}
+
+/**
+ * The speed keys (Bruno, Nov 27 2026: "speed select should also have keyboard shortcuts", "space to pause feels more
+ * intuitive"; every key is the player's to change: src/meta/keys.ts). The pause key pauses, and on a paused run gives
+ * back the speed it had before the pause. The answer is the new speed, or null when the key is not a speed key.
+ */
+const SPEEDS = { speed1: 1, speed3: 3, speed8: 8 } as const;
+
+export function speedKey(keys: KeyMap, pressed: string, speed: number, beforePause: number): number | null {
+  const a = actionOf(keys, pressed, ['speed1', 'speed3', 'speed8', 'pause'] as const);
+  if (!a) return null;
+  if (a === 'pause') return speed === 0 ? (beforePause || 1) : 0;
+  return SPEEDS[a];
 }

@@ -542,8 +542,8 @@ export function checkPlacement(map: CityMap, pattern: PlatePattern, slot: number
   if (clash) {
     return {
       problem: clash.open
-        ? `its ${EDGE_WORD[clash.edge]} street would run into a wall — turn it (R)`
-        : `it would wall off the street coming from the ${EDGE_WORD[clash.edge]} — turn it (R)`,
+        ? `its ${EDGE_WORD[clash.edge]} street would run into a wall — turn it`
+        : `it would wall off the street coming from the ${EDGE_WORD[clash.edge]} — turn it`,
       edges,
     };
   }

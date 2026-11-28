@@ -17,7 +17,9 @@
  *                  never: src/ui/landing.ts), forget everything (twice, to be sure)
  */
 import './settings.css';
-import { CALM, CASTE_TINTS, RESERVED_KEYS, type Channel, type Settings } from '../meta/settings';
+import { CALM, CASTE_TINTS, type Channel, type Settings } from '../meta/settings';
+import { DEFAULT_KEYS, KEY_SECTIONS, keyLabel, rebind, type KeyAction } from '../meta/keys';
+import { refreshKbds } from './keyText';
 import { DEFAULT_YOKE, forgetEverything, loadSettings, loadYoke, saveSettings, saveYoke } from '../meta/storage';
 import { CASTE_COLORS } from '../render/render';
 import { HUD_THEMES, applyHud, currentHud } from '../hud/themes';
@@ -47,7 +49,9 @@ export function registerSettingsSection(id: 'yoke-account' | string, draw: (box:
 let root: HTMLElement | null = null;
 let current: SettingsOpen | null = null;
 let confirmReset = false;
-let listening: 'turnLeft' | 'turnRight' | null = null;
+let listening: KeyAction | null = null;
+/** Why the last key pressed for a binding was not taken (shown under the keys until the next change). */
+let keyNote = '';
 
 export const settingsOpen = (): boolean => !!current;
 
@@ -69,10 +73,12 @@ export function applySettings(s: Settings = loadSettings()): void {
   // The board reads its caste colours from this object every frame.
   Object.assign(CASTE_COLORS as unknown as Record<string, number>, t);
   // The view's turn buttons name the keys that turn it (they said Q and E after the keys were changed: bug hunt, Nov 22 2026).
-  const L = s.keys.turnLeft.toUpperCase(), R = s.keys.turnRight.toUpperCase();
+  const L = keyLabel(s.keys.turnLeft), R = keyLabel(s.keys.turnRight);
   const left = document.getElementById('view-turn-left'), right = document.getElementById('view-turn-right');
   if (left) { left.textContent = `⟲ ${L}`; left.title = `Turn the view a quarter turn (${L})`; }
   if (right) { right.textContent = `${R} ⟳`; right.title = `Turn the view a quarter turn the other way (${R})`; }
+  // Every other key named on screen (src/ui/keyText.ts).
+  refreshKbds();
 }
 
 export function openSettings(o: SettingsOpen): void {
@@ -103,7 +109,6 @@ export function closeSettings(): void {
 
 const PLACE: Record<SettingsPlace, string> = { menu: 'MAIN CONSOLE', ship: 'SHIPBOARD', run: 'DEPLOYMENT PAUSED' };
 const pct = (v: number) => `${Math.round(v * 100)}%`;
-const keyName = (k: string) => (k === ' ' ? 'SPACE' : k.toUpperCase());
 
 function render(): void {
   if (!root || !current) return;
@@ -157,13 +162,10 @@ function render(): void {
           <div class="st-swatches">${sw(tint.war, 'WAR')}${sw(tint.science, 'SCIENCE')}${sw(tint.royal, 'ROYAL')}</div></div>
       </section>
       <section><h3>THE BOARD</h3>
-        <div class="st-row"><span>Turn the view<small>click a key, then press the new one</small></span>
-          <span class="st-keys"><button class="st-key${listening === 'turnLeft' ? ' listen' : ''}" data-key="turnLeft">${listening === 'turnLeft' ? 'PRESS…' : keyName(s.keys.turnLeft)}</button>
-          <button class="st-key${listening === 'turnRight' ? ' listen' : ''}" data-key="turnRight">${listening === 'turnRight' ? 'PRESS…' : keyName(s.keys.turnRight)}</button></span></div>
         ${toggle('edge', s.edgeScroll, 'Edge scroll', 'the pointer at the window\'s edge slides the board')}
         <label class="st-row"><span>Zoom speed<small>the wheel, per notch</small></span>
           <input type="range" min="105" max="135" step="5" value="${Math.round(s.zoomStep * 100)}" data-range="zoom" aria-label="Zoom speed"><b>${Math.round((s.zoomStep - 1) * 100)}%</b></label>
-        <div class="st-row col"><span>A deployment starts at<small>the ❚❚ 1× 3× 8× buttons still change it in play</small></span>
+        <div class="st-row col"><span>A deployment starts at<small>the ❚❚ 1× 3× 8× buttons and their keys still change it in play</small></span>
           ${choice('speed', [['1', '1×'], ['3', '3×'], ['8', '8×']], String(s.speed))}</div>
       </section>
       <section><h3>YOKE — ACCOUNT &amp; MIND</h3>${mind}${live ? yokeSlot : ''}
@@ -174,6 +176,11 @@ function render(): void {
         <div class="st-row"><span>Reset progress<small>the campaign, the skirmish genes, every setting: the next start is a first launch</small></span>
           <button class="st-btn danger" data-act="reset">${confirmReset ? 'AGAIN TO CONFIRM — EVERYTHING IS LOST' : 'FORGET EVERYTHING'}</button></div>
       </section>
+    </div>
+    <div class="st-keymap"><h3>KEYS <small>click a key, then press the new one · a key another command has swaps with it · Esc stays the way back</small></h3>
+      <div class="st-kcols">${KEY_SECTIONS.map((sec) => `<div class="st-ksec"><h4>${sec.title}</h4>${sec.note ? `<p class="st-knote">${sec.note}</p>` : ''}${sec.rows.map((r) => `
+        <div class="st-row st-krow"><span>${r.label}</span><button class="st-key${listening === r.id ? ' listen' : ''}${s.keys[r.id] ? '' : ' unset'}" data-key="${r.id}">${listening === r.id ? 'PRESS…' : keyLabel(s.keys[r.id])}</button></div>`).join('')}</div>`).join('')}</div>
+      <div class="st-row"><span class="st-kwarn">${keyNote}</span><button class="st-btn" data-act="keys-default">DEFAULT KEYS</button></div>
     </div>
     <div class="st-foot">Esc closes${current.where === 'run' ? ' and the deployment goes on' : ''}.</div></div>`;
   const slot = root.querySelector<HTMLElement>('.st-slot[data-slot="yoke-account"]:not(.empty)');
@@ -236,7 +243,8 @@ function onClick(ev: MouseEvent): void {
     location.href = location.pathname;
     return;
   }
-  if (d.key) { listening = d.key as 'turnLeft' | 'turnRight'; render(); return; }
+  if (d.key) { listening = d.key as KeyAction; keyNote = ''; render(); return; }
+  if (d.act === 'keys-default') { s.keys = { ...DEFAULT_KEYS }; keyNote = ''; change(s); return; }
   if (d.toggle) {
     if (d.toggle === 'yoke-mind') { const y = loadYoke(); saveYoke({ ...y, mode: y.mode === 'scripted' ? DEFAULT_YOKE.mode : 'scripted' }); render(); return; }
     if (d.toggle === 'yoke-voice') { const y = loadYoke(); saveYoke({ ...y, muted: !y.muted }); render(); return; }
@@ -266,11 +274,13 @@ function onKey(ev: KeyboardEvent): void {
   if (listening) {
     ev.preventDefault();
     ev.stopImmediatePropagation();
-    const k = ev.key.toLowerCase();
-    if (k === 'escape') { listening = null; render(); return; }
+    if (ev.key === 'Escape') { listening = null; render(); return; }
+    // A modifier pressed on its way to a combination: wait for the key itself.
+    if (['Shift', 'Control', 'Alt', 'Meta'].includes(ev.key)) return;
     const s = structuredClone(loadSettings());
-    const other = listening === 'turnLeft' ? s.keys.turnRight : s.keys.turnLeft;
-    if (ev.key.length === 1 && !RESERVED_KEYS.includes(k) && k !== other) s.keys[listening] = k;
+    const next = rebind(s.keys, listening, ev.key);
+    keyNote = next ? '' : `${keyLabel(ev.key.toLowerCase())} cannot be used there: Esc, Enter, Tab and the modifier keys are kept, and a swap may not leave two commands on one key.`;
+    if (next) s.keys = next;
     listening = null;
     change(s);
     return;
