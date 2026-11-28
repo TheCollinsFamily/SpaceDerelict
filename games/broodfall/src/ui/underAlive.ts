@@ -83,12 +83,16 @@ export class UnderAlive {
     // offsetTop/offsetHeight (rounded each on its own) left a dark line unpainted between rows across a whole organ.
     const gr = g.getBoundingClientRect();
     const pr = (this.canvas.offsetParent ?? g.parentElement!).getBoundingClientRect();
-    const ox = gr.left + g.clientLeft, oy = gr.top + g.clientTop;
+    // Settings > Text size zooms the organ card (src/ui/settings.css): a rect is in zoomed pixels, a style length and
+    // clientWidth are in the card's own pixels (Nov 27 2026, Bruno: "graphics on the underground build are getting
+    // misplaced"; the canvas came out 1.15 times too big and too far down and right). z converts between the two.
+    const z = g.offsetWidth ? gr.width / g.offsetWidth : 1;
+    const ox = gr.left + g.clientLeft * z, oy = gr.top + g.clientTop * z;
     const W = g.clientWidth, H = g.clientHeight;
     this.stale = false;
-    Object.assign(this.canvas.style, { left: `${ox - pr.left}px`, top: `${oy - pr.top}px`, width: `${W}px`, height: `${H}px` });
-    this.canvas.width = Math.max(1, Math.round(W * dpr));
-    this.canvas.height = Math.max(1, Math.round(H * dpr));
+    Object.assign(this.canvas.style, { left: `${(ox - pr.left) / z}px`, top: `${(oy - pr.top) / z}px`, width: `${W}px`, height: `${H}px` });
+    this.canvas.width = Math.max(1, Math.round(W * z * dpr));
+    this.canvas.height = Math.max(1, Math.round(H * z * dpr));
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.cells = [...g.querySelectorAll<HTMLElement>('[data-loop]')].map((el) => {
       const [url, n, anchor, pong] = el.dataset.loop!.split('|');
